@@ -1,5 +1,3 @@
-import { TanStackQueryProvider } from "@/integrations/tanstack-query/provider";
-
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -42,7 +40,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   return (
-    <TanStackQueryProvider>
+    <>
       <Outlet />
       <TanStackDevtools
         config={{ position: "bottom-right" }}
@@ -57,7 +55,7 @@ function RootComponent() {
           },
         ]}
       />
-    </TanStackQueryProvider>
+    </>
   );
 }
 

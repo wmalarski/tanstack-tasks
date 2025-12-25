@@ -14,6 +14,7 @@ export const useSignInMutationOptions = () => {
 
       formData.set("email", data.email);
       formData.set("password", data.password);
+      formData.set("flow", "signIn");
 
       return signIn(PASSWORD_PROVIDER, formData);
     },
@@ -33,6 +34,7 @@ export const useSignUpMutationOptions = () => {
 
       formData.set("email", data.email);
       formData.set("password", data.password);
+      formData.set("flow", "signUp");
 
       return signIn(PASSWORD_PROVIDER, formData);
     },
