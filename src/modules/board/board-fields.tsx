@@ -8,14 +8,21 @@ import {
 import { FormError } from "@/components/ui/form-error";
 import { withForm } from "@/integrations/tanstack-form";
 
-import { type InsertBoardArgs, InsertBoardSchema } from "./validation";
+import * as v from "valibot";
+
+export const BoardFieldsSchema = v.object({
+  description: v.optional(v.string()),
+  title: v.string(),
+});
+
+export type BoardFieldsResult = v.InferInput<typeof BoardFieldsSchema>;
 
 type BoardFieldsProps = {
   error?: Error | null;
 };
 
 export const BoardFields = withForm({
-  defaultValues: { description: "", title: "" } as InsertBoardArgs,
+  defaultValues: { description: "", title: "" } as BoardFieldsResult,
   props: {} as BoardFieldsProps,
   render: ({ form, error }) => {
     return (
@@ -46,5 +53,5 @@ export const BoardFields = withForm({
       </FieldSet>
     );
   },
-  validators: { onSubmit: InsertBoardSchema },
+  validators: { onSubmit: BoardFieldsSchema },
 });

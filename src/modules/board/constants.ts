@@ -1,1 +1,0 @@
-export const SELECT_BOARDS_DEFAULT_LIMIT = 50;

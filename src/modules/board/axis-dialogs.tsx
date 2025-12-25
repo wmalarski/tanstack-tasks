@@ -24,8 +24,6 @@ import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import * as v from "valibot";
 
-import type { AxisDefinition } from "./validation";
-
 const AxisFieldsSchema = v.object({
   name: v.string(),
 });
@@ -64,7 +62,7 @@ const AxisFields = withForm({
 type InsertAxisFormProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
   onSuccess: () => void;
 };
 
@@ -114,7 +112,7 @@ const InsertAxisForm = ({
 type UpdateAxisFormProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
   onSuccess: () => void;
 };
 
@@ -166,7 +164,7 @@ const UpdateAxisForm = ({
 type InsertAxisItemPopoverProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
 };
 
 export const InsertAxisItemPopover = ({
@@ -202,7 +200,7 @@ export const InsertAxisItemPopover = ({
 type UpdateAxisItemPopoverProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
 };
 
 export const UpdateAxisItemPopover = ({
@@ -249,7 +247,7 @@ const DeleteAxisSubmit = () => {
 type DeleteAxisFormProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
 };
 
 const DeleteAxisForm = ({ index, board, axisKey }: DeleteAxisFormProps) => {
@@ -278,7 +276,7 @@ const DeleteAxisForm = ({ index, board, axisKey }: DeleteAxisFormProps) => {
 type DeleteAxisPopoverProps = {
   index: number;
   board: Doc<"boards">;
-  axisKey: keyof AxisDefinition;
+  axisKey: keyof Doc<"boards">["axis"];
 };
 
 export const DeleteAxisPopover = ({

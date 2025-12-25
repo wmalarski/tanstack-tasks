@@ -15,8 +15,11 @@ import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
 
-import { BoardFields } from "./board-fields";
-import { type InsertBoardArgs, InsertBoardSchema } from "./validation";
+import {
+  BoardFields,
+  type BoardFieldsResult,
+  BoardFieldsSchema,
+} from "./board-fields";
 
 export const InsertBoardDialog = () => {
   const insertBoardMutationFn = useConvexMutation(api.boards.insertBoard);
@@ -28,12 +31,12 @@ export const InsertBoardDialog = () => {
     defaultValues: {
       description: "",
       title: "",
-    } as InsertBoardArgs,
+    } as BoardFieldsResult,
     onSubmit: async (data) => {
       await insertBoardMutation.mutateAsync(data.value);
     },
     validators: {
-      onSubmit: InsertBoardSchema,
+      onSubmit: BoardFieldsSchema,
     },
   });
 
