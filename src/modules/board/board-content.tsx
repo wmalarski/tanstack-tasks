@@ -1,25 +1,29 @@
+import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { api } from "convex/_generated/api";
+import type { Id } from "convex/_generated/dataModel";
 
 import {
   DeleteAxisPopover,
   InsertAxisItemPopover,
   UpdateAxisItemPopover,
 } from "./axis-dialogs";
-import { getBoardQueryOptions } from "./services";
 
 type BoardContentProps = {
-  boardId: string;
+  boardId: Id<"boards">;
 };
 
 export const BoardContent = ({ boardId }: BoardContentProps) => {
-  const getBoardQuery = useSuspenseQuery(getBoardQueryOptions({ boardId }));
+  const getBoardQuery = useSuspenseQuery(
+    convexQuery(api.boards.queryBoard, { boardId }),
+  );
 
   return (
     <>
       <pre>{JSON.stringify(getBoardQuery.data, null, 2)}</pre>
       <div>
         <span>X</span>
-        {getBoardQuery.data.axis.x.map((item, index) => (
+        {getBoardQuery.data?.axis.x.map((item, index) => (
           <div key={item.id}>
             <span>{item.name}</span>
             <UpdateAxisItemPopover

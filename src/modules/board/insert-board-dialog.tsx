@@ -11,14 +11,18 @@ import {
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/integrations/tanstack-form";
 
+import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
+import { api } from "convex/_generated/api";
 
 import { BoardFields } from "./board-fields";
-import { insertBoardMutationOptions } from "./services";
 import { type InsertBoardArgs, InsertBoardSchema } from "./validation";
 
 export const InsertBoardDialog = () => {
-  const insertBoardMutation = useMutation(insertBoardMutationOptions());
+  const insertBoardMutationFn = useConvexMutation(api.boards.insertBoard);
+  const insertBoardMutation = useMutation({
+    mutationFn: insertBoardMutationFn,
+  });
 
   const insertBoardForm = useAppForm({
     defaultValues: {
