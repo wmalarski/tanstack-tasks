@@ -5,11 +5,11 @@ import { useAppForm } from "@/integrations/tanstack-form";
 import { useMutation } from "@tanstack/react-query";
 
 import { AuthFields } from "./auth-fields";
-import { signUpMutationOptions } from "./services";
+import { useSignUpMutationOptions } from "./services";
 import { AuthSchema } from "./validation";
 
 export const SignUpForm = () => {
-  const signInMutation = useMutation(signUpMutationOptions());
+  const signInMutation = useMutation(useSignUpMutationOptions());
 
   const signUpForm = useAppForm({
     defaultValues: {

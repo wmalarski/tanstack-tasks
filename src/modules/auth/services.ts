@@ -1,77 +1,73 @@
-import { authClient } from "@/integrations/better-auth/client";
-
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { useAuthActions } from "@convex-dev/auth/react";
+import { mutationOptions } from "@tanstack/react-query";
 
 import type { AuthSchemaOutput } from "./validation";
 
-export const signInMutationOptions = () => {
+const PASSWORD_PROVIDER = "password";
+
+export const useSignInMutationOptions = () => {
+  const { signIn } = useAuthActions();
+
   return mutationOptions({
     mutationFn: async (data: AuthSchemaOutput) => {
-      const response = await authClient.signIn.email(data);
+      const formData = new FormData();
 
-      if (response.error) {
-        throw response.error;
-      }
+      formData.set("email", data.email);
+      formData.set("password", data.password);
 
-      return response.data;
+      return signIn(PASSWORD_PROVIDER, formData);
     },
-    onSuccess(data, _variables, _onMutate, context) {
-      const queryOptions = getUserQueryOptions();
-      context.client.setQueryData(queryOptions.queryKey, data.user);
-    },
+    // onSuccess(data, _variables, _onMutate, context) {
+    //   const queryOptions = getUserQueryOptions();
+    //   context.client.setQueryData(queryOptions.queryKey, data.user);
+    // },
   });
 };
 
-export const signUpMutationOptions = () => {
+export const useSignUpMutationOptions = () => {
+  const { signIn } = useAuthActions();
+
   return mutationOptions({
     mutationFn: async (data: AuthSchemaOutput) => {
-      const response = await authClient.signUp.email({
-        ...data,
-        name: data.email,
-      });
+      const formData = new FormData();
 
-      if (response.error) {
-        throw response.error;
-      }
+      formData.set("email", data.email);
+      formData.set("password", data.password);
 
-      return response.data;
+      return signIn(PASSWORD_PROVIDER, formData);
     },
-    onSuccess(data, _variables, _onMutate, context) {
-      const queryOptions = getUserQueryOptions();
-      context.client.setQueryData(queryOptions.queryKey, data.user);
-    },
+    // onSuccess(data, _variables, _onMutate, context) {
+    //   const queryOptions = getUserQueryOptions();
+    //   context.client.setQueryData(queryOptions.queryKey, data.user);
+    // },
   });
 };
 
-export const signOutMutationOptions = () => {
+export const useSignOutMutationOptions = () => {
+  const { signOut } = useAuthActions();
+
   return mutationOptions({
     mutationFn: async () => {
-      const response = await authClient.signOut();
-
-      if (response.error) {
-        throw response.error;
-      }
-
-      return response.data;
+      return signOut();
     },
-    onSuccess(_data, _variables, _onMutate, context) {
-      const queryOptions = getUserQueryOptions();
-      context.client.setQueryData(queryOptions.queryKey, undefined);
-    },
+    // onSuccess(_data, _variables, _onMutate, context) {
+    //   const queryOptions = getUserQueryOptions();
+    //   context.client.setQueryData(queryOptions.queryKey, undefined);
+    // },
   });
 };
 
-export const getUserQueryOptions = () => {
-  return queryOptions({
-    queryFn: async () => {
-      const response = await authClient.getSession();
+// export const getUserQueryOptions = () => {
+//   return queryOptions({
+//     queryFn: async () => {
+//       const response = await authClient.getSession();
 
-      if (response.error) {
-        throw response.error;
-      }
+//       if (response.error) {
+//         throw response.error;
+//       }
 
-      return response.data?.user;
-    },
-    queryKey: ["getUserQuery"],
-  });
-};
+//       return response.data?.user;
+//     },
+//     queryKey: ["getUserQuery"],
+//   });
+// };

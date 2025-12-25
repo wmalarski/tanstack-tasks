@@ -4,10 +4,10 @@ import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { startTransition } from "react";
 
-import { signOutMutationOptions } from "./services";
+import { useSignOutMutationOptions } from "./services";
 
 export const SignOutButton = () => {
-  const signOutMutation = useMutation(signOutMutationOptions());
+  const signOutMutation = useMutation(useSignOutMutationOptions());
 
   const navigate = useNavigate();
 

@@ -7,11 +7,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { startTransition } from "react";
 
 import { AuthFields } from "./auth-fields";
-import { signInMutationOptions } from "./services";
+import { useSignInMutationOptions } from "./services";
 import { AuthSchema } from "./validation";
 
 export const SignInForm = () => {
-  const signInMutation = useMutation(signInMutationOptions());
+  const signInOptions = useSignInMutationOptions();
+  const signInMutation = useMutation(signInOptions);
 
   const navigate = useNavigate();
 
