@@ -9,6 +9,5 @@ export const Route = createFileRoute("/_protected/board/$boardId")({
 
 function RouteComponent() {
   const params = Route.useParams();
-
   return <BoardContent boardId={params.boardId as Id<"boards">} />;
 }

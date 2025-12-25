@@ -21,7 +21,12 @@
     }
   },
   "files": {
-    "includes": ["**", "!worker-configuration.d.ts"]
+    "includes": [
+      "**",
+      "!worker-configuration.d.ts",
+      "!src/routeTree.gen.ts",
+      "!convex/_generated"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -76,6 +81,16 @@
       }
     }
   },
+  "overrides": [
+    {
+      "includes": ["src/routes/**"],
+      "linter": {
+        "rules": {
+          "style": "off"
+        }
+      }
+    }
+  ],
   "vcs": {
     "clientKind": "git",
     "enabled": true,

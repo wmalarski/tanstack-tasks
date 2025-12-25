@@ -1,15 +1,12 @@
 {
-  "projectName": "tanstack-stories",
-  "mode": "file-router",
-  "typescript": true,
-  "tailwind": true,
-  "packageManager": "npm",
-  "git": false,
   "addOnOptions": {},
-  "version": 1,
+  "chosenAddOns": ["start", "cloudflare"],
   "framework": "react-cra",
-  "chosenAddOns": [
-    "start",
-    "cloudflare"
-  ]
+  "git": false,
+  "mode": "file-router",
+  "packageManager": "npm",
+  "projectName": "tanstack-stories",
+  "tailwind": true,
+  "typescript": true,
+  "version": 1
 }
