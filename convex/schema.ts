@@ -17,16 +17,14 @@ export default defineSchema({
     to: v.id("nodes"),
   }).index("board", ["board"]),
   nodes: defineTable({
+    axisX: v.string(),
+    axisY: v.number(),
     board: v.id("boards"),
     description: v.string(),
     estimate: v.number(),
     link: v.optional(v.string()),
-    position: v.object({
-      x: v.number(),
-      xAxis: v.string(),
-      y: v.number(),
-      yAxis: v.string(),
-    }),
+    positionX: v.number(),
+    positionY: v.string(),
     title: v.string(),
   }).index("board", ["board"]),
 });

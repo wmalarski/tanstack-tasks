@@ -2,6 +2,9 @@ import {
   addEdge,
   applyEdgeChanges,
   applyNodeChanges,
+  type EdgeChange,
+  type Node,
+  type NodeChange,
   ReactFlow,
 } from "@xyflow/react";
 import { type ComponentProps, useCallback, useRef, useState } from "react";
@@ -9,11 +12,14 @@ import "@xyflow/react/dist/style.css";
 
 import { InsertNodeDialog } from "./insert-node-dialog";
 
-const initialNodes = [
+const initialNodes: Node[] = [
   { data: { label: "Node 1" }, id: "n1", position: { x: 0, y: 0 } },
   { data: { label: "Node 2" }, id: "n2", position: { x: 0, y: 100 } },
 ];
 const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
+
+type NodeType = (typeof initialNodes)[0];
+type EdgeType = (typeof initialEdges)[0];
 
 export const Editor = () => {
   const [nodes, setNodes] = useState(initialNodes);
@@ -23,16 +29,14 @@ export const Editor = () => {
 
   const [isInsertNodeOpen, setIsInsertNodeOpen] = useState(false);
 
-  const onNodesChange = useCallback(
-    (changes: any) =>
-      setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot)),
-    [],
-  );
-  const onEdgesChange = useCallback(
-    (changes: any) =>
-      setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot)),
-    [],
-  );
+  const onNodesChange = useCallback((changes: NodeChange<NodeType>[]) => {
+    setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
+  }, []);
+
+  const onEdgesChange = useCallback((changes: EdgeChange<EdgeType>[]) => {
+    setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
+  }, []);
+
   const onConnect = useCallback(
     (params: any) =>
       setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),

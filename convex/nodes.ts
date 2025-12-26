@@ -1,64 +1,48 @@
-import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
 
-export const queryBoards = query({
-  args: {
-    paginationOpts: paginationOptsValidator,
-  },
-  handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-
-    if (!user._id) {
-      throw new Error("Not signed in");
-    }
-
-    return ctx.db
-      .query("boards")
-      .filter((q) => q.eq(q.field("user"), user._id))
-      .paginate(args.paginationOpts);
-  },
-});
-
-export const queryBoard = query({
+export const queryNodes = query({
   args: {
     boardId: v.id("boards"),
   },
   handler: async (ctx, args) => {
-    const board = await ctx.db.get("boards", args.boardId);
-
-    if (!board) {
-      throw new Error("Board not found");
-    }
-
-    return board;
+    return ctx.db
+      .query("nodes")
+      .filter((q) => q.eq(q.field("board"), args.boardId))
+      .collect();
   },
 });
 
-export const insertBoard = mutation({
+export const insertNode = mutation({
   args: {
-    description: v.optional(v.string()),
+    axisX: v.string(),
+    axisY: v.number(),
+    boardId: v.id("boards"),
+    description: v.string(),
+    estimate: v.number(),
+    link: v.optional(v.string()),
+    positionX: v.number(),
+    positionY: v.string(),
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
-
-    if (!user._id) {
-      throw new Error("Not signed in");
-    }
-
-    return ctx.db.insert("boards", {
-      axis: { x: [], y: [] },
-      description: args.description ?? "",
+    return ctx.db.insert("nodes", {
+      axisX: args.axisX,
+      axisY: args.axisY,
+      board: args.boardId,
+      description: args.description,
+      estimate: args.estimate,
+      link: args.link,
+      positionX: args.positionX,
+      positionY: args.positionY,
       title: args.title,
-      user: user._id,
     });
   },
 });
 
-export const updateBoard = mutation({
+export const updateNode = mutation({
   args: {
     axis: v.object({
       x: v.array(v.object({ id: v.string(), name: v.string() })),
