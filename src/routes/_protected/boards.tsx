@@ -1,4 +1,5 @@
 import { SignOutButton } from "@/modules/auth/sign-out-button";
+import { BoardList } from "@/modules/board/board-list";
 
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -10,7 +11,6 @@ export const Route = createFileRoute("/_protected/boards")({
 });
 
 function RouteComponent() {
-  // const userQuery = useConvexQuery(api.users.viewer);
   const userQuery = useSuspenseQuery(convexQuery(api.auth.getCurrentUser));
 
   return (
@@ -18,7 +18,7 @@ function RouteComponent() {
       Hello "/_protected/boards"!
       <SignOutButton />
       <pre>{JSON.stringify(userQuery.data, null, 2)}</pre>
-      {/* <BoardList /> */}
+      <BoardList />
     </div>
   );
 }

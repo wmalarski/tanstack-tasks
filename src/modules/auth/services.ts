@@ -12,7 +12,6 @@ export const useSignInMutationOptions = () => {
 
   return mutationOptions({
     mutationFn: async (data: AuthSchemaOutput) => {
-      console.log("[mutationFn-1]");
       const result = await authClient.signIn.email({
         email: data.email,
         password: data.password,
@@ -23,17 +22,10 @@ export const useSignInMutationOptions = () => {
         throw result.error;
       }
 
-      console.log("[mutationFn-2]");
       return result.data;
     },
-    async onSuccess(data, _variables, _onMutate, _context) {
-      // const userQueryOptions = convexQuery(api.auth.getCurrentUser);
-      console.log("[onSuccess-1]", data);
-
-      // context.client.setQueryData(userQueryOptions.queryKey, data.user);
-
+    async onSuccess() {
       await navigate({ to: "/boards" });
-      console.log("[onSuccess-2]");
     },
   });
 };
@@ -55,12 +47,7 @@ export const useSignUpMutationOptions = () => {
 
       return result.data;
     },
-    async onSuccess(data, _variables, _onMutate, context) {
-      // const queryOptions = getUserQueryOptions();
-      // context.client.setQueryData(queryOptions.queryKey, data.user);
-
-      console.log("[data]", data);
-
+    async onSuccess() {
       await navigate({ to: "/" });
     },
   });
@@ -79,7 +66,6 @@ export const useSignOutMutationOptions = () => {
 
       return result.data;
     },
-
     async onSuccess(_data, _variables, _onMutate, context) {
       const userQueryOptions = convexQuery(api.auth.getCurrentUser);
       context.client.setQueryData(userQueryOptions.queryKey, undefined);

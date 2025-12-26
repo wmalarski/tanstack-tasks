@@ -18,11 +18,9 @@ export const SignInForm = () => {
       password: "",
     },
     onSubmit: async (data) => {
-      console.log("[onSubmit-1]");
       try {
         await signInMutation.mutateAsync(data.value);
       } catch {}
-      console.log("[onSubmit-2]");
     },
     validators: {
       onSubmit: AuthSchema,
@@ -30,9 +28,7 @@ export const SignInForm = () => {
   });
 
   const formAction = async () => {
-    console.log("[formAction-1]");
     await signInForm.handleSubmit();
-    console.log("[formAction-2]");
   };
 
   return (

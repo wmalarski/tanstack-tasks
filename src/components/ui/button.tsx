@@ -54,11 +54,11 @@ function Button({ className, variant, size, ...props }: ButtonProps) {
   );
 }
 
-function FormButton({ children, ...props }: ButtonProps) {
+function FormButton({ children, disabled, ...props }: ButtonProps) {
   const { pending } = useFormStatus();
 
   return (
-    <Button {...props}>
+    <Button {...props} disabled={pending || disabled}>
       {pending ? <Spinner /> : null}
       {children}
     </Button>
