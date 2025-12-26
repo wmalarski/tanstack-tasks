@@ -71,6 +71,8 @@ export const updateBoard = mutation({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    console.log("[updateBoard]", args);
+
     const user = await authComponent.getAuthUser(ctx);
 
     if (!user._id) {
@@ -84,9 +86,10 @@ export const updateBoard = mutation({
     }
 
     return ctx.db.patch("boards", args.boardId, {
-      axis: args.axis,
-      description: args.description,
-      title: args.title,
+      ...board,
+      axis: args.axis ?? board.axis,
+      description: args.description ?? board.description,
+      title: args.title ?? board.title,
     });
   },
 });

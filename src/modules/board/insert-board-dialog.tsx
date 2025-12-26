@@ -11,21 +11,18 @@ import {
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/integrations/tanstack-form";
 
-import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "convex/_generated/api";
 
 import {
   BoardFields,
   type BoardFieldsResult,
   BoardFieldsSchema,
 } from "./board-fields";
+import { useInsertBoardMutationOptions } from "./services";
 
 export const InsertBoardDialog = () => {
-  const insertBoardMutationFn = useConvexMutation(api.boards.insertBoard);
-  const insertBoardMutation = useMutation({
-    mutationFn: insertBoardMutationFn,
-  });
+  const insertBoardMutationOptions = useInsertBoardMutationOptions();
+  const insertBoardMutation = useMutation(insertBoardMutationOptions);
 
   const insertBoardForm = useAppForm({
     defaultValues: {
@@ -33,7 +30,9 @@ export const InsertBoardDialog = () => {
       title: "",
     } as BoardFieldsResult,
     onSubmit: async (data) => {
-      await insertBoardMutation.mutateAsync(data.value);
+      try {
+        await insertBoardMutation.mutateAsync(data.value);
+      } catch {}
     },
     validators: {
       onSubmit: BoardFieldsSchema,

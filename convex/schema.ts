@@ -9,13 +9,12 @@ export default defineSchema({
     }),
     description: v.string(),
     title: v.string(),
-    user: v.id("user"),
+    user: v.string(),
   }).index("user", ["user"]),
   edges: defineTable({
     board: v.id("boards"),
     from: v.id("nodes"),
     to: v.id("nodes"),
-    user: v.id("user"),
   }).index("board", ["board"]),
   nodes: defineTable({
     board: v.id("boards"),
@@ -29,8 +28,5 @@ export default defineSchema({
       yAxis: v.string(),
     }),
     title: v.string(),
-    user: v.id("user"),
-  })
-    .index("board", ["board"])
-    .index("user", ["user"]),
+  }).index("board", ["board"]),
 });

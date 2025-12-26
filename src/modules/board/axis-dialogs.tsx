@@ -16,13 +16,13 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useAppForm, withForm } from "@/integrations/tanstack-form";
 
-import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "convex/_generated/api";
 import type { Doc } from "convex/_generated/dataModel";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import * as v from "valibot";
+
+import { useUpdateBoardMutationOptions } from "./services";
 
 const AxisFieldsSchema = v.object({
   name: v.string(),
@@ -72,11 +72,10 @@ const InsertAxisForm = ({
   axisKey,
   onSuccess,
 }: InsertAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
+  const updateBoardMutationOptions = useUpdateBoardMutationOptions({
     onSuccess,
   });
+  const updateBoardMutation = useMutation(updateBoardMutationOptions);
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
@@ -87,10 +86,12 @@ const InsertAxisForm = ({
         name: data.value.name,
       });
 
-      await updateBoardMutation.mutateAsync({
-        axis: { ...board.axis, [axisKey]: copy },
-        boardId: board._id,
-      });
+      try {
+        await updateBoardMutation.mutateAsync({
+          axis: { ...board.axis, [axisKey]: copy },
+          boardId: board._id,
+        });
+      } catch {}
     },
     validators: { onSubmit: AxisFieldsSchema },
   });
@@ -122,11 +123,10 @@ const UpdateAxisForm = ({
   axisKey,
   onSuccess,
 }: UpdateAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
+  const updateBoardMutationOptions = useUpdateBoardMutationOptions({
     onSuccess,
   });
+  const updateBoardMutation = useMutation(updateBoardMutationOptions);
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
@@ -137,12 +137,12 @@ const UpdateAxisForm = ({
         name: data.value.name,
       });
 
-      await updateBoardMutation.mutateAsync({
-        axis: { ...board.axis, [axisKey]: copy },
-        boardId: board._id,
-      });
-
-      onSuccess();
+      try {
+        await updateBoardMutation.mutateAsync({
+          axis: { ...board.axis, [axisKey]: copy },
+          boardId: board._id,
+        });
+      } catch {}
     },
     validators: { onSubmit: AxisFieldsSchema },
   });
@@ -251,19 +251,19 @@ type DeleteAxisFormProps = {
 };
 
 const DeleteAxisForm = ({ index, board, axisKey }: DeleteAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
-  });
+  const updateBoardMutationOptions = useUpdateBoardMutationOptions();
+  const updateBoardMutation = useMutation(updateBoardMutationOptions);
 
   const formAction = async () => {
     const copy = [...board.axis[axisKey]];
     copy.splice(index, 1);
 
-    await updateBoardMutation.mutateAsync({
-      axis: { ...board.axis, [axisKey]: copy },
-      boardId: board._id,
-    });
+    try {
+      await updateBoardMutation.mutateAsync({
+        axis: { ...board.axis, [axisKey]: copy },
+        boardId: board._id,
+      });
+    } catch {}
   };
 
   return (
