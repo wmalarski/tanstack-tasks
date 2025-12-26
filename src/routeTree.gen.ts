@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as FormsIndexRouteImport } from './routes/_forms/index'
 import { Route as ProtectedBoardsRouteImport } from './routes/_protected/boards'
 import { Route as FormsSignUpRouteImport } from './routes/_forms/sign-up'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ProtectedBoardBoardIdRouteImport } from './routes/_protected/board/$boardId'
 
 const FormsIndexRoute = FormsIndexRouteImport.update({
@@ -29,6 +30,11 @@ const FormsSignUpRoute = FormsSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProtectedBoardBoardIdRoute = ProtectedBoardBoardIdRouteImport.update({
   id: '/_protected/board/$boardId',
   path: '/board/$boardId',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/boards': typeof ProtectedBoardsRoute
   '/': typeof FormsIndexRoute
   '/board/$boardId': typeof ProtectedBoardBoardIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/sign-up': typeof FormsSignUpRoute
   '/boards': typeof ProtectedBoardsRoute
   '/': typeof FormsIndexRoute
   '/board/$boardId': typeof ProtectedBoardBoardIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,18 +61,20 @@ export interface FileRoutesById {
   '/_protected/boards': typeof ProtectedBoardsRoute
   '/_forms/': typeof FormsIndexRoute
   '/_protected/board/$boardId': typeof ProtectedBoardBoardIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/sign-up' | '/boards' | '/' | '/board/$boardId'
+  fullPaths: '/sign-up' | '/boards' | '/' | '/board/$boardId' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/sign-up' | '/boards' | '/' | '/board/$boardId'
+  to: '/sign-up' | '/boards' | '/' | '/board/$boardId' | '/api/auth/$'
   id:
     | '__root__'
     | '/_forms/sign-up'
     | '/_protected/boards'
     | '/_forms/'
     | '/_protected/board/$boardId'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -72,6 +82,7 @@ export interface RootRouteChildren {
   ProtectedBoardsRoute: typeof ProtectedBoardsRoute
   FormsIndexRoute: typeof FormsIndexRoute
   ProtectedBoardBoardIdRoute: typeof ProtectedBoardBoardIdRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -97,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FormsSignUpRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_protected/board/$boardId': {
       id: '/_protected/board/$boardId'
       path: '/board/$boardId'
@@ -112,6 +130,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProtectedBoardsRoute: ProtectedBoardsRoute,
   FormsIndexRoute: FormsIndexRoute,
   ProtectedBoardBoardIdRoute: ProtectedBoardBoardIdRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

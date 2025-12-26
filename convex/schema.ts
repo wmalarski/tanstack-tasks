@@ -1,9 +1,7 @@
-import { authTables } from "@convex-dev/auth/server";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
-  ...authTables,
   boards: defineTable({
     axis: v.object({
       x: v.array(v.object({ id: v.string(), name: v.string() })),
@@ -11,13 +9,13 @@ export default defineSchema({
     }),
     description: v.string(),
     title: v.string(),
-    user: v.id("users"),
+    user: v.id("user"),
   }).index("user", ["user"]),
   edges: defineTable({
     board: v.id("boards"),
     from: v.id("nodes"),
     to: v.id("nodes"),
-    user: v.id("users"),
+    user: v.id("user"),
   }).index("board", ["board"]),
   nodes: defineTable({
     board: v.id("boards"),
@@ -31,7 +29,7 @@ export default defineSchema({
       yAxis: v.string(),
     }),
     title: v.string(),
-    user: v.id("users"),
+    user: v.id("user"),
   })
     .index("board", ["board"])
     .index("user", ["user"]),

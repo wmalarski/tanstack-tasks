@@ -1,23 +1,23 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
+import { authComponent } from "./auth";
 
 export const queryBoards = query({
   args: {
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
 
-    if (!userId) {
+    if (!user._id) {
       throw new Error("Not signed in");
     }
 
     return ctx.db
       .query("boards")
-      .filter((q) => q.eq(q.field("user"), userId))
+      .filter((q) => q.eq(q.field("user"), user._id))
       .paginate(args.paginationOpts);
   },
 });
@@ -43,9 +43,9 @@ export const insertBoard = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
 
-    if (!userId) {
+    if (!user._id) {
       throw new Error("Not signed in");
     }
 
@@ -53,7 +53,7 @@ export const insertBoard = mutation({
       axis: { x: [], y: [] },
       description: args.description ?? "",
       title: args.title,
-      user: userId,
+      user: user._id,
     });
 
     return board;
@@ -71,9 +71,9 @@ export const updateBoard = mutation({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const user = await authComponent.getAuthUser(ctx);
 
-    if (!userId) {
+    if (!user._id) {
       throw new Error("Not signed in");
     }
 
