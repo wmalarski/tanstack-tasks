@@ -3,8 +3,6 @@ import { Link } from "@/components/ui/link";
 import { useAppForm } from "@/integrations/tanstack-form";
 
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { startTransition } from "react";
 
 import { AuthFields } from "./auth-fields";
 import { useSignInMutationOptions } from "./services";
@@ -14,15 +12,17 @@ export const SignInForm = () => {
   const signInOptions = useSignInMutationOptions();
   const signInMutation = useMutation(signInOptions);
 
-  const navigate = useNavigate();
-
   const signInForm = useAppForm({
     defaultValues: {
       email: "",
       password: "",
     },
     onSubmit: async (data) => {
-      await signInMutation.mutateAsync(data.value);
+      console.log("[onSubmit-1]");
+      try {
+        await signInMutation.mutateAsync(data.value);
+      } catch {}
+      console.log("[onSubmit-2]");
     },
     validators: {
       onSubmit: AuthSchema,
@@ -30,11 +30,9 @@ export const SignInForm = () => {
   });
 
   const formAction = async () => {
+    console.log("[formAction-1]");
     await signInForm.handleSubmit();
-
-    startTransition(async () => {
-      await navigate({ to: "/boards" });
-    });
+    console.log("[formAction-2]");
   };
 
   return (

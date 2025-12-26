@@ -2,7 +2,6 @@
   "dependencies": {
     "@base-ui/react": "^1.0.0",
     "@cloudflare/vite-plugin": "^1.13.8",
-    "@convex-dev/auth": "^0.0.90",
     "@convex-dev/better-auth": "^0.10.9",
     "@convex-dev/react-query": "^0.1.0",
     "@tailwindcss/vite": "^4.0.6",
@@ -45,6 +44,7 @@
   "scripts": {
     "build": "vite build",
     "cf-typegen": "wrangler types",
+    "convex:dev": "convex dev",
     "deploy": "npm run build && wrangler deploy",
     "dev": "vite dev --port 3000",
     "knip": "knip",

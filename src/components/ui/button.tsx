@@ -2,6 +2,9 @@ import { cn } from "@/integrations/tailwind/utils";
 
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import { cva, type VariantProps } from "class-variance-authority";
+import { useFormStatus } from "react-dom";
+
+import { Spinner } from "./spinner";
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
@@ -51,4 +54,15 @@ function Button({ className, variant, size, ...props }: ButtonProps) {
   );
 }
 
-export { Button, buttonVariants };
+function FormButton({ children, ...props }: ButtonProps) {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button {...props}>
+      {pending ? <Spinner /> : null}
+      {children}
+    </Button>
+  );
+}
+
+export { Button, FormButton, buttonVariants };

@@ -1,75 +1,89 @@
-import { useAuthActions } from "@convex-dev/auth/react";
+import { authClient } from "@/integrations/better-auth/client";
+
+import { convexQuery } from "@convex-dev/react-query";
 import { mutationOptions } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { api } from "convex/_generated/api";
 
 import type { AuthSchemaOutput } from "./validation";
 
-const PASSWORD_PROVIDER = "password";
-
 export const useSignInMutationOptions = () => {
-  const { signIn } = useAuthActions();
+  const navigate = useNavigate();
 
   return mutationOptions({
     mutationFn: async (data: AuthSchemaOutput) => {
-      const formData = new FormData();
+      console.log("[mutationFn-1]");
+      const result = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+        rememberMe: true,
+      });
 
-      formData.set("email", data.email);
-      formData.set("password", data.password);
-      formData.set("flow", "signIn");
+      if (result.error) {
+        throw result.error;
+      }
 
-      return signIn(PASSWORD_PROVIDER, formData);
+      console.log("[mutationFn-2]");
+      return result.data;
     },
-    // onSuccess(data, _variables, _onMutate, context) {
-    //   const queryOptions = getUserQueryOptions();
-    //   context.client.setQueryData(queryOptions.queryKey, data.user);
-    // },
+    async onSuccess(data, _variables, _onMutate, _context) {
+      // const userQueryOptions = convexQuery(api.auth.getCurrentUser);
+      console.log("[onSuccess-1]", data);
+
+      // context.client.setQueryData(userQueryOptions.queryKey, data.user);
+
+      await navigate({ to: "/boards" });
+      console.log("[onSuccess-2]");
+    },
   });
 };
 
 export const useSignUpMutationOptions = () => {
-  const { signIn } = useAuthActions();
+  const navigate = useNavigate();
 
   return mutationOptions({
     mutationFn: async (data: AuthSchemaOutput) => {
-      const formData = new FormData();
+      const result = await authClient.signUp.email({
+        email: data.email,
+        name: data.email,
+        password: data.password,
+      });
 
-      formData.set("email", data.email);
-      formData.set("password", data.password);
-      formData.set("flow", "signUp");
+      if (result.error) {
+        throw result.error;
+      }
 
-      return signIn(PASSWORD_PROVIDER, formData);
+      return result.data;
     },
-    // onSuccess(data, _variables, _onMutate, context) {
-    //   const queryOptions = getUserQueryOptions();
-    //   context.client.setQueryData(queryOptions.queryKey, data.user);
-    // },
+    async onSuccess(data, _variables, _onMutate, context) {
+      // const queryOptions = getUserQueryOptions();
+      // context.client.setQueryData(queryOptions.queryKey, data.user);
+
+      console.log("[data]", data);
+
+      await navigate({ to: "/" });
+    },
   });
 };
 
 export const useSignOutMutationOptions = () => {
-  const { signOut } = useAuthActions();
+  const navigate = useNavigate();
 
   return mutationOptions({
     mutationFn: async () => {
-      return signOut();
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        throw result.error;
+      }
+
+      return result.data;
     },
-    // onSuccess(_data, _variables, _onMutate, context) {
-    //   const queryOptions = getUserQueryOptions();
-    //   context.client.setQueryData(queryOptions.queryKey, undefined);
-    // },
+
+    async onSuccess(_data, _variables, _onMutate, context) {
+      const userQueryOptions = convexQuery(api.auth.getCurrentUser);
+      context.client.setQueryData(userQueryOptions.queryKey, undefined);
+      await navigate({ to: "/" });
+    },
   });
 };
-
-// export const getUserQueryOptions = () => {
-//   return queryOptions({
-//     queryFn: async () => {
-//       const response = await authClient.getSession();
-
-//       if (response.error) {
-//         throw response.error;
-//       }
-
-//       return response.data?.user;
-//     },
-//     queryKey: ["getUserQuery"],
-//   });
-// };
