@@ -20,7 +20,7 @@ export default defineSchema({
     board: v.id("boards"),
     description: v.string(),
     estimate: v.number(),
-    link: v.string(),
+    link: v.optional(v.string()),
     position: v.object({
       x: v.number(),
       xAxis: v.string(),
