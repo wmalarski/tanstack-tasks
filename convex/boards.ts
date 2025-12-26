@@ -71,8 +71,6 @@ export const updateBoard = mutation({
     title: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    console.log("[updateBoard]", args);
-
     const user = await authComponent.getAuthUser(ctx);
 
     if (!user._id) {

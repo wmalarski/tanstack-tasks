@@ -8,6 +8,7 @@ import {
   InsertAxisItemPopover,
   UpdateAxisItemPopover,
 } from "./axis-dialogs";
+import { Editor } from "./editor";
 
 type BoardContentProps = {
   boardId: Id<"boards">;
@@ -23,7 +24,7 @@ export const BoardContent = ({ boardId }: BoardContentProps) => {
       <pre>{JSON.stringify(getBoardQuery.data, null, 2)}</pre>
       <div>
         <span>X</span>
-        {getBoardQuery.data?.axis.x.map((item, index) => (
+        {getBoardQuery.data.axis.x.map((item, index) => (
           <div key={item.id}>
             <span>{item.name}</span>
             <UpdateAxisItemPopover
@@ -81,6 +82,7 @@ export const BoardContent = ({ boardId }: BoardContentProps) => {
           />
         ) : null}
       </div>
+      <Editor />
     </>
   );
 };
