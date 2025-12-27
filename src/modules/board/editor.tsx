@@ -18,13 +18,14 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { convexQuery } from "@convex-dev/react-query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
 import type { Id } from "convex/_generated/dataModel";
 import type { EdgeResult } from "convex/edges";
 import type { NodeResult } from "convex/nodes";
 
 import { InsertNodeDialog } from "./insert-node-dialog";
+import { useUpdateNodesMutationOptions } from "./services";
 
 type EditorProps = {
   boardId: Id<"boards">;
@@ -110,6 +111,9 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changesRef = useRef<NodeChange<NodeResult>[]>([]);
 
+  const updateNodesMutationOptions = useUpdateNodesMutationOptions();
+  const updateNodesMutation = useMutation(updateNodesMutationOptions);
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -119,7 +123,7 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
   }, []);
 
   return useEffectEvent((updates: NodeChange<NodeResult>[]) => {
-    if (timeoutRef.current) {
+    if (timeoutRef.current || updateNodesMutation.isPending) {
       changesRef.current.push(...updates);
       return;
     }
@@ -129,12 +133,12 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
       timeoutRef.current = null;
       changesRef.current = [];
 
+      const removedNodeIds: string[] = [];
       const changedNodeIds = new Set<string>();
 
       changes.forEach((change) => {
-        if (change.type !== "add") {
-          changedNodeIds.add(change.id);
-        }
+        change.type === "position" && changedNodeIds.add(change.id);
+        change.type === "remove" && removedNodeIds.push(change.id);
       });
 
       const changedNodes = nodes.filter((node) => changedNodeIds.has(node.id));
@@ -147,6 +151,20 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
         changedNodes,
         changes,
         nodes,
+        removedNodeIds,
+      });
+
+      if (removedNodeIds.length === 0 && applied.length === 0) {
+        return;
+      }
+
+      updateNodesMutation.mutate({
+        remove: removedNodeIds as Id<"nodes">[],
+        update: applied.map((node) => ({
+          nodeId: node.id,
+          positionX: node.position.x,
+          positionY: node.position.y,
+        })),
       });
     }, 1000);
   });
