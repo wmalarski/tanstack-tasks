@@ -28,3 +28,31 @@ export const useUpdateBoardMutationOptions = ({
     onSuccess,
   });
 };
+
+type UseInsertNodeMutationOptionsArgs = {
+  onSuccess?: () => void;
+};
+
+export const useInsertNodeMutationOptions = ({
+  onSuccess,
+}: UseInsertNodeMutationOptionsArgs = {}) => {
+  const insertNodeMutationFn = useConvexMutation(api.nodes.insertNode);
+  return mutationOptions({
+    mutationFn: insertNodeMutationFn,
+    onSuccess,
+  });
+};
+
+export const useUpdateNodesMutationOptions = () => {
+  const updateNodesMutationFn = useConvexMutation(api.nodes.updateNodes);
+  return mutationOptions({
+    mutationFn: updateNodesMutationFn,
+  });
+};
+
+export const useUpdateEdgesMutationOptions = () => {
+  const updateEdgesMutationFn = useConvexMutation(api.edges.updateEdges);
+  return mutationOptions({
+    mutationFn: updateEdgesMutationFn,
+  });
+};

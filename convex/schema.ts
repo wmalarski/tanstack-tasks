@@ -18,13 +18,13 @@ export default defineSchema({
   }).index("board", ["board"]),
   nodes: defineTable({
     axisX: v.string(),
-    axisY: v.number(),
+    axisY: v.string(),
     board: v.id("boards"),
     description: v.string(),
     estimate: v.number(),
     link: v.optional(v.string()),
     positionX: v.number(),
-    positionY: v.string(),
+    positionY: v.number(),
     title: v.string(),
   }).index("board", ["board"]),
 });

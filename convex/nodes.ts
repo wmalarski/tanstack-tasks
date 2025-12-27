@@ -17,13 +17,13 @@ export const queryNodes = query({
 export const insertNode = mutation({
   args: {
     axisX: v.string(),
-    axisY: v.number(),
+    axisY: v.string(),
     boardId: v.id("boards"),
     description: v.string(),
     estimate: v.number(),
     link: v.optional(v.string()),
     positionX: v.number(),
-    positionY: v.string(),
+    positionY: v.number(),
     title: v.string(),
   },
   handler: async (ctx, args) => {
@@ -47,13 +47,13 @@ export const updateNodes = mutation({
     update: v.array(
       v.object({
         axisX: v.optional(v.string()),
-        axisY: v.optional(v.number()),
+        axisY: v.optional(v.string()),
         description: v.optional(v.string()),
         estimate: v.optional(v.number()),
         link: v.optional(v.string()),
         nodeId: v.id("nodes"),
         positionX: v.optional(v.number()),
-        positionY: v.optional(v.string()),
+        positionY: v.optional(v.number()),
         title: v.optional(v.string()),
       }),
     ),

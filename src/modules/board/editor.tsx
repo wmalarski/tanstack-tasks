@@ -10,6 +10,8 @@ import {
 import { type ComponentProps, useCallback, useRef, useState } from "react";
 import "@xyflow/react/dist/style.css";
 
+import type { Doc, Id } from "convex/_generated/dataModel";
+
 import { InsertNodeDialog } from "./insert-node-dialog";
 
 const initialNodes: Node[] = [
@@ -21,7 +23,13 @@ const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
 type NodeType = (typeof initialNodes)[0];
 type EdgeType = (typeof initialEdges)[0];
 
-export const Editor = () => {
+type EditorProps = {
+  boardId: Id<"boards">;
+  nodes: Doc<"nodes">[];
+  edges: Doc<"edges">[];
+};
+
+export const Editor = ({ boardId }: EditorProps) => {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
 
@@ -63,6 +71,7 @@ export const Editor = () => {
         onNodesChange={onNodesChange}
       />
       <InsertNodeDialog
+        boardId={boardId}
         isOpen={isInsertNodeOpen}
         onIsOpenChange={setIsInsertNodeOpen}
       />

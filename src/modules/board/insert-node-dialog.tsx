@@ -10,31 +10,47 @@ import {
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/integrations/tanstack-form";
 
+import { useMutation } from "@tanstack/react-query";
+import type { Id } from "convex/_generated/dataModel";
+
 import {
   NODE_FIELDS_DEFAULT,
   NodeFields,
   NodeFieldsSchema,
 } from "./node-fields";
+import { useInsertNodeMutationOptions } from "./services";
 
 type InsertNodeDialogProps = {
   isOpen: boolean;
+  boardId: Id<"boards">;
   onIsOpenChange: (isOpen: boolean) => void;
 };
 
 export const InsertNodeDialog = ({
   isOpen,
+  boardId,
   onIsOpenChange,
 }: InsertNodeDialogProps) => {
-  //   const insertBoardMutationOptions = useInsertBoardMutationOptions();
-  //   const insertBoardMutation = useMutation(insertBoardMutationOptions);
+  const insertNodeMutationOptions = useInsertNodeMutationOptions();
+  const insertNodeMutation = useMutation(insertNodeMutationOptions);
 
   const insertNodeForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
     onSubmit: async (data) => {
       console.log("[data]", data);
-      //   try {
-      //     await insertBoardMutation.mutateAsync(data.value);
-      //   } catch {}
+      try {
+        await insertNodeMutation.mutateAsync({
+          axisX: "",
+          axisY: "",
+          boardId,
+          description: data.value.description,
+          estimate: data.value.estimate,
+          link: data.value.link,
+          positionX: 0,
+          positionY: 0,
+          title: data.value.title,
+        });
+      } catch {}
     },
     validators: {
       onSubmit: NodeFieldsSchema,

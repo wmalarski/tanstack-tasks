@@ -15,14 +15,49 @@ type BoardContentProps = {
 };
 
 export const BoardContent = ({ boardId }: BoardContentProps) => {
+  return (
+    <>
+      <BoardAxis boardId={boardId} />
+      <BoardEditor boardId={boardId} />
+    </>
+  );
+};
+
+type BoardEditorProps = {
+  boardId: Id<"boards">;
+};
+
+const BoardEditor = ({ boardId }: BoardEditorProps) => {
+  const getNodesQuery = useSuspenseQuery(
+    convexQuery(api.nodes.queryNodes, { boardId }),
+  );
+
+  const getEdgesQuery = useSuspenseQuery(
+    convexQuery(api.edges.queryEdges, { boardId }),
+  );
+
+  return (
+    <Editor
+      boardId={boardId}
+      edges={getEdgesQuery.data}
+      nodes={getNodesQuery.data}
+    />
+  );
+};
+
+type BoardAxisProps = {
+  boardId: Id<"boards">;
+};
+
+const BoardAxis = ({ boardId }: BoardAxisProps) => {
   const getBoardQuery = useSuspenseQuery(
     convexQuery(api.boards.queryBoard, { boardId }),
   );
 
   return (
     <>
-      <pre>{JSON.stringify(getBoardQuery.data, null, 2)}</pre>
       <div>
+        <pre>{JSON.stringify(getBoardQuery.data, null, 2)}</pre>
         <span>X</span>
         {getBoardQuery.data.axis.x.map((item, index) => (
           <div key={item.id}>
@@ -82,7 +117,6 @@ export const BoardContent = ({ boardId }: BoardContentProps) => {
           />
         ) : null}
       </div>
-      <Editor />
     </>
   );
 };
