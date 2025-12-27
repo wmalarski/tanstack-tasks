@@ -1,7 +1,7 @@
 import {
-  addEdge,
-  applyEdgeChanges,
   applyNodeChanges,
+  type Connection,
+  type Edge,
   type EdgeChange,
   type Node,
   type NodeChange,
@@ -10,18 +10,15 @@ import {
 import { type ComponentProps, useCallback, useRef, useState } from "react";
 import "@xyflow/react/dist/style.css";
 
+import { convexQuery } from "@convex-dev/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
 
 import { InsertNodeDialog } from "./insert-node-dialog";
 
-const initialNodes: Node[] = [
-  { data: { label: "Node 1" }, id: "n1", position: { x: 0, y: 0 } },
-  { data: { label: "Node 2" }, id: "n2", position: { x: 0, y: 100 } },
-];
-const initialEdges = [{ id: "n1-n2", source: "n1", target: "n2" }];
-
-type NodeType = (typeof initialNodes)[0];
-type EdgeType = (typeof initialEdges)[0];
+type NodeType = ReturnType<typeof mapDocumentsToNodes>[0];
+type EdgeType = ReturnType<typeof mapDocumentsToEdges>[0];
 
 type EditorProps = {
   boardId: Id<"boards">;
@@ -29,34 +26,73 @@ type EditorProps = {
   edges: Doc<"edges">[];
 };
 
-export const Editor = ({ boardId }: EditorProps) => {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
+export const Editor = ({
+  boardId,
+  nodes: nodeDocuments,
+  edges: edgeDocuments,
+}: EditorProps) => {
+  const queryClient = useQueryClient();
+
+  const nodes = mapDocumentsToNodes(nodeDocuments);
+  const edges = mapDocumentsToEdges(edgeDocuments);
+
+  const [draggingNodes, setDraggingNodes] = useState<{
+    nodes: Node<NodeType>[];
+    ids: string[];
+  }>({ ids: [], nodes: [] });
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   const [isInsertNodeOpen, setIsInsertNodeOpen] = useState(false);
 
-  const onNodesChange = useCallback((changes: NodeChange<NodeType>[]) => {
-    setNodes((nodesSnapshot) => applyNodeChanges(changes, nodesSnapshot));
-  }, []);
+  const onNodesChange = useCallback(
+    (changes: NodeChange<NodeType>[]) => {
+      const changesToApply: NodeChange<NodeType>[] = [];
+      const draggingChanges: NodeChange<NodeType>[] = [];
 
-  const onEdgesChange = useCallback((changes: EdgeChange<EdgeType>[]) => {
-    setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
-  }, []);
+      const nodesQueryOptions = convexQuery(api.nodes.queryNodes, { boardId });
 
-  const onConnect = useCallback(
-    (params: any) =>
-      setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)),
-    [],
+      queryClient.setQueryData(
+        nodesQueryOptions.queryKey,
+        (docs: Doc<"nodes">[]) => {
+          const nodes = mapDocumentsToNodes(docs);
+        },
+      );
+
+      changes.forEach((change) => {
+        switch (change.type) {
+          case "add":
+          case "replace":
+          case "select":
+          case "remove":
+          case "dimensions":
+            break;
+          case "position": {
+            (change.dragging ? draggingChanges : changesToApply).push(change);
+          }
+        }
+      });
+
+      console.log("[onNodesChange]", changes);
+      setDraggingNodes((nodesSnapshot) => {
+        return { ids: [], nodes: applyNodeChanges(changes, []) };
+      });
+    },
+    [boardId, queryClient.setQueryData],
   );
 
-  const onDoubleClick: ComponentProps<typeof ReactFlow>["onDoubleClick"] = (
-    event,
-  ) => {
-    if (event.target === containerRef.current) {
-      setIsInsertNodeOpen((current) => !current);
-    }
+  const onEdgesChange = useCallback((changes: EdgeChange<EdgeType>[]) => {
+    console.log("[onEdgesChange]", changes);
+    // setEdges((edgesSnapshot) => applyEdgeChanges(changes, edgesSnapshot));
+  }, []);
+
+  const onConnect = useCallback((params: Connection) => {
+    console.log("[onConnect]", params);
+    // setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
+  }, []);
+
+  const onPaneClick: ComponentProps<typeof ReactFlow>["onPaneClick"] = () => {
+    setIsInsertNodeOpen((current) => !current);
   };
 
   return (
@@ -66,9 +102,9 @@ export const Editor = ({ boardId }: EditorProps) => {
         fitView
         nodes={nodes}
         onConnect={onConnect}
-        onDoubleClickCapture={onDoubleClick}
         onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
+        onPaneClick={onPaneClick}
       />
       <InsertNodeDialog
         boardId={boardId}
@@ -76,5 +112,34 @@ export const Editor = ({ boardId }: EditorProps) => {
         onIsOpenChange={setIsInsertNodeOpen}
       />
     </div>
+  );
+};
+
+const mapDocumentsToNodes = (docs: Doc<"nodes">[]) => {
+  return docs.map(
+    (doc) =>
+      ({
+        data: {
+          axisX: doc.axisX,
+          axisY: doc.axisY,
+          description: doc.description,
+          estimate: doc.estimate,
+          label: doc.title,
+          link: doc.link,
+        },
+        id: doc._id,
+        position: { x: doc.positionX, y: doc.positionY },
+      }) satisfies Node,
+  );
+};
+
+const mapDocumentsToEdges = (docs: Doc<"edges">[]) => {
+  return docs.map(
+    (doc) =>
+      ({
+        id: doc._id,
+        source: doc.source,
+        target: doc.target,
+      }) satisfies Edge,
   );
 };

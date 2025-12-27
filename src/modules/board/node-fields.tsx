@@ -12,16 +12,16 @@ import * as v from "valibot";
 
 export const NodeFieldsSchema = v.object({
   description: v.string(),
-  estimate: v.pipe(v.number(), v.minValue(0), v.integer()),
+  estimate: v.pipe(v.string(), v.toNumber(), v.minValue(0), v.integer()),
   link: v.optional(v.string()),
   title: v.string(),
 });
 
-export type NodeFieldsResult = v.InferOutput<typeof NodeFieldsSchema>;
+export type NodeFieldsResult = v.InferInput<typeof NodeFieldsSchema>;
 
 export const NODE_FIELDS_DEFAULT: NodeFieldsResult = {
   description: "",
-  estimate: 1,
+  estimate: "1",
   link: "",
   title: "",
 };
@@ -78,6 +78,7 @@ export const NodeFields = withForm({
                   placeholder="Title"
                   required
                   step={1}
+                  type="number"
                   width="full"
                 />
                 <FieldError errors={field.state.meta.errors} />

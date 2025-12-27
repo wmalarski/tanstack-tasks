@@ -31,25 +31,29 @@ export const InsertNodeDialog = ({
   boardId,
   onIsOpenChange,
 }: InsertNodeDialogProps) => {
-  const insertNodeMutationOptions = useInsertNodeMutationOptions();
+  const insertNodeMutationOptions = useInsertNodeMutationOptions({
+    onSuccess: () => onIsOpenChange(false),
+  });
+
   const insertNodeMutation = useMutation(insertNodeMutationOptions);
 
   const insertNodeForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
     onSubmit: async (data) => {
-      console.log("[data]", data);
       try {
         await insertNodeMutation.mutateAsync({
           axisX: "",
           axisY: "",
           boardId,
           description: data.value.description,
-          estimate: data.value.estimate,
+          estimate: Number(data.value.estimate),
           link: data.value.link,
           positionX: 0,
           positionY: 0,
           title: data.value.title,
         });
+
+        insertNodeForm.reset();
       } catch {}
     },
     validators: {
@@ -74,7 +78,7 @@ export const InsertNodeDialog = ({
           </DialogHeader>
           <insertNodeForm.AppForm>
             <NodeFields
-              //   error={insertBoardMutation.error}
+              error={insertNodeMutation.error}
               form={insertNodeForm}
             />
             <DialogFooter>
