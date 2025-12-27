@@ -1,5 +1,7 @@
+import type { Node } from "@xyflow/react";
 import { v } from "convex/values";
 
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 export const queryNodes = query({
@@ -7,10 +9,12 @@ export const queryNodes = query({
     boardId: v.id("boards"),
   },
   handler: async (ctx, args) => {
-    return ctx.db
+    const result = await ctx.db
       .query("nodes")
       .filter((q) => q.eq(q.field("board"), args.boardId))
       .collect();
+
+    return mapDocumentsToNodes(result);
   },
 });
 
@@ -85,3 +89,23 @@ export const updateNodes = mutation({
     ]);
   },
 });
+
+const mapDocumentsToNodes = (docs: Doc<"nodes">[]) => {
+  return docs.map(
+    (doc) =>
+      ({
+        data: {
+          axisX: doc.axisX,
+          axisY: doc.axisY,
+          description: doc.description,
+          estimate: doc.estimate,
+          label: doc.title,
+          link: doc.link,
+        },
+        id: doc._id,
+        position: { x: doc.positionX, y: doc.positionY },
+      }) satisfies Node,
+  );
+};
+
+export type NodeResult = ReturnType<typeof mapDocumentsToNodes>[0];

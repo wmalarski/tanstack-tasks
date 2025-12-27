@@ -1,5 +1,7 @@
+import type { Edge } from "@xyflow/react";
 import { v } from "convex/values";
 
+import type { Doc } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 export const queryEdges = query({
@@ -7,10 +9,12 @@ export const queryEdges = query({
     boardId: v.id("boards"),
   },
   handler: async (ctx, args) => {
-    return ctx.db
+    const result = await ctx.db
       .query("edges")
       .filter((q) => q.eq(q.field("board"), args.boardId))
       .collect();
+
+    return mapDocumentsToEdges(result);
   },
 });
 
@@ -38,3 +42,16 @@ export const updateEdges = mutation({
     ]);
   },
 });
+
+const mapDocumentsToEdges = (docs: Doc<"edges">[]) => {
+  return docs.map(
+    (doc) =>
+      ({
+        id: doc._id,
+        source: doc.source,
+        target: doc.target,
+      }) satisfies Edge,
+  );
+};
+
+export type EdgeResult = ReturnType<typeof mapDocumentsToEdges>[0];
