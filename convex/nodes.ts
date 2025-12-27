@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
-import { authComponent } from "./auth";
 
 export const queryNodes = query({
   args: {
@@ -42,34 +41,47 @@ export const insertNode = mutation({
   },
 });
 
-export const updateNode = mutation({
+export const updateNodes = mutation({
   args: {
-    axis: v.object({
-      x: v.array(v.object({ id: v.string(), name: v.string() })),
-      y: v.array(v.object({ id: v.string(), name: v.string() })),
-    }),
-    boardId: v.id("boards"),
-    description: v.optional(v.string()),
-    title: v.optional(v.string()),
+    nodes: v.array(
+      v.object({
+        axisX: v.optional(v.string()),
+        axisY: v.optional(v.number()),
+        description: v.optional(v.string()),
+        estimate: v.optional(v.number()),
+        link: v.optional(v.string()),
+        nodeId: v.id("nodes"),
+        positionX: v.optional(v.number()),
+        positionY: v.optional(v.string()),
+        title: v.optional(v.string()),
+      }),
+    ),
+    removed: v.array(v.id("nodes")),
   },
   handler: async (ctx, args) => {
-    const user = await authComponent.getAuthUser(ctx);
+    const nodes = await Promise.all(
+      args.nodes.map((node) => ctx.db.get("nodes", node.nodeId)),
+    );
 
-    if (!user._id) {
-      throw new Error("Not signed in");
-    }
+    const pairs = nodes.map((node, index) => ({
+      node,
+      update: args.nodes[index],
+    }));
 
-    const board = await ctx.db.get("boards", args.boardId);
-
-    if (!board) {
-      throw new Error("Board not found");
-    }
-
-    return ctx.db.patch("boards", args.boardId, {
-      ...board,
-      axis: args.axis ?? board.axis,
-      description: args.description ?? board.description,
-      title: args.title ?? board.title,
-    });
+    return Promise.all([
+      ...pairs.map(({ update, node }) =>
+        ctx.db.patch("nodes", update.nodeId, {
+          axisX: update.axisX ?? node?.axisX,
+          axisY: update.axisY ?? node?.axisY,
+          description: update.description ?? node?.description,
+          estimate: update.estimate ?? node?.estimate,
+          link: update.link ?? node?.link,
+          positionX: update.positionX ?? node?.positionX,
+          positionY: update.positionY ?? node?.positionY,
+          title: update.title ?? node?.title,
+        }),
+      ),
+      ...args.removed.map((nodeId) => ctx.db.delete("nodes", nodeId)),
+    ]);
   },
 });
