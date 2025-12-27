@@ -13,8 +13,8 @@ export default defineSchema({
   }).index("user", ["user"]),
   edges: defineTable({
     board: v.id("boards"),
-    from: v.id("nodes"),
-    to: v.id("nodes"),
+    source: v.id("nodes"),
+    target: v.id("nodes"),
   }).index("board", ["board"]),
   nodes: defineTable({
     axisX: v.string(),

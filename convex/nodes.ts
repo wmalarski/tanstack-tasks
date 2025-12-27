@@ -43,7 +43,8 @@ export const insertNode = mutation({
 
 export const updateNodes = mutation({
   args: {
-    nodes: v.array(
+    remove: v.array(v.id("nodes")),
+    update: v.array(
       v.object({
         axisX: v.optional(v.string()),
         axisY: v.optional(v.number()),
@@ -56,19 +57,19 @@ export const updateNodes = mutation({
         title: v.optional(v.string()),
       }),
     ),
-    removed: v.array(v.id("nodes")),
   },
   handler: async (ctx, args) => {
     const nodes = await Promise.all(
-      args.nodes.map((node) => ctx.db.get("nodes", node.nodeId)),
+      args.update.map((node) => ctx.db.get("nodes", node.nodeId)),
     );
 
     const pairs = nodes.map((node, index) => ({
       node,
-      update: args.nodes[index],
+      update: args.update[index],
     }));
 
     return Promise.all([
+      ...args.remove.map((nodeId) => ctx.db.delete("nodes", nodeId)),
       ...pairs.map(({ update, node }) =>
         ctx.db.patch("nodes", update.nodeId, {
           axisX: update.axisX ?? node?.axisX,
@@ -81,7 +82,6 @@ export const updateNodes = mutation({
           title: update.title ?? node?.title,
         }),
       ),
-      ...args.removed.map((nodeId) => ctx.db.delete("nodes", nodeId)),
     ]);
   },
 });
