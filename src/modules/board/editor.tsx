@@ -25,7 +25,10 @@ import type { EdgeResult } from "convex/edges";
 import type { NodeResult } from "convex/nodes";
 
 import { InsertNodeDialog } from "./insert-node-dialog";
-import { useUpdateNodesMutationOptions } from "./services";
+import {
+  useUpdateEdgesMutationOptions,
+  useUpdateNodesMutationOptions,
+} from "./services";
 
 type EditorProps = {
   boardId: Id<"boards">;
@@ -54,33 +57,61 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
     [boardId, queryClient.setQueryData, throttledUpdate],
   );
 
+  const updateEdgesMutationOptions = useUpdateEdgesMutationOptions();
+  const updateEdgesMutation = useMutation(updateEdgesMutationOptions);
+
   const onEdgesChange = useCallback(
     (changes: EdgeChange<EdgeResult>[]) => {
-      const nodesQueryOptions = convexQuery(api.edges.queryEdges, { boardId });
+      const edgesQueryOptions = convexQuery(api.edges.queryEdges, { boardId });
 
       queryClient.setQueryData(
-        nodesQueryOptions.queryKey,
+        edgesQueryOptions.queryKey,
         (current: EdgeResult[]) => applyEdgeChanges(changes, current),
       );
 
-      console.log("[onEdgesChange]", changes);
+      const removedEdgeIds: Id<"edges">[] = [];
+      const insertEdgePairs: [Id<"nodes">, Id<"nodes">][] = [];
+
+      changes.forEach((change) => {
+        change.type === "remove" &&
+          removedEdgeIds.push(change.id as Id<"edges">);
+        change.type === "add" &&
+          insertEdgePairs.push([
+            change.item.source as Id<"nodes">,
+            change.item.target as Id<"nodes">,
+          ]);
+      });
+
+      updateEdgesMutation.mutate({
+        boardId,
+        insert: insertEdgePairs.map(([source, target]) => ({ source, target })),
+        remove: removedEdgeIds,
+      });
     },
-    [boardId, queryClient.setQueryData],
+    [boardId, queryClient.setQueryData, updateEdgesMutation.mutate],
   );
 
   const onConnect = useCallback(
     (params: Connection) => {
-      const nodesQueryOptions = convexQuery(api.edges.queryEdges, { boardId });
+      const edgesQueryOptions = convexQuery(api.edges.queryEdges, { boardId });
 
       queryClient.setQueryData(
-        nodesQueryOptions.queryKey,
+        edgesQueryOptions.queryKey,
         (current: EdgeResult[]) => addEdge(params, current),
       );
 
-      console.log("[onConnect]", params);
-      // setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot));
+      updateEdgesMutation.mutate({
+        boardId,
+        insert: [
+          {
+            source: params.source as Id<"nodes">,
+            target: params.target as Id<"nodes">,
+          },
+        ],
+        remove: [],
+      });
     },
-    [boardId, queryClient.setQueryData],
+    [boardId, queryClient.setQueryData, updateEdgesMutation.mutate],
   );
 
   const onPaneClick: ComponentProps<typeof ReactFlow>["onPaneClick"] = () => {
@@ -144,15 +175,6 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
       const changedNodes = nodes.filter((node) => changedNodeIds.has(node.id));
 
       const applied = applyNodeChanges(changes, changedNodes);
-
-      console.log("[applied]", {
-        applied,
-        changedNodeIds,
-        changedNodes,
-        changes,
-        nodes,
-        removedNodeIds,
-      });
 
       if (removedNodeIds.length === 0 && applied.length === 0) {
         return;

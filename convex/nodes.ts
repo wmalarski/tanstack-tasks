@@ -72,11 +72,6 @@ export const updateNodes = mutation({
       update: args.update[index],
     }));
 
-    console.log("[updateNodes]", {
-      args,
-      pairs,
-    });
-
     await Promise.all([
       ...args.remove.map((nodeId) => ctx.db.delete("nodes", nodeId)),
       ...pairs.map(({ update, node }) =>
