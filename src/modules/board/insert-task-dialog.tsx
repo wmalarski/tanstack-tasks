@@ -7,11 +7,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/integrations/tanstack-form";
 
 import { useMutation } from "@tanstack/react-query";
 import type { Id } from "convex/_generated/dataModel";
+import { useState } from "react";
 
 import {
   NODE_FIELDS_DEFAULT,
@@ -21,22 +23,20 @@ import {
 import { useInsertTaskMutationOptions } from "./services";
 
 type InsertTaskDialogProps = {
-  isOpen: boolean;
   boardId: Id<"boards">;
   axisX: Id<"axis">;
   axisY: Id<"axis">;
-  onIsOpenChange: (isOpen: boolean) => void;
 };
 
 export const InsertTaskDialog = ({
-  isOpen,
   axisX,
   axisY,
   boardId,
-  onIsOpenChange,
 }: InsertTaskDialogProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const insertNodeMutationOptions = useInsertTaskMutationOptions({
-    onSuccess: () => onIsOpenChange(false),
+    onSuccess: () => setIsOpen(false),
   });
 
   const insertNodeMutation = useMutation(insertNodeMutationOptions);
@@ -68,7 +68,10 @@ export const InsertTaskDialog = ({
   };
 
   return (
-    <Dialog onOpenChange={onIsOpenChange} open={isOpen}>
+    <Dialog onOpenChange={setIsOpen} open={isOpen}>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Open Dialog
+      </DialogTrigger>
       <DialogContent className="sm:max-w-106.25">
         <form action={formAction} className="flex flex-col gap-4">
           <DialogHeader>
