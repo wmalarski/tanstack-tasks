@@ -29,7 +29,7 @@ export const insertTask = mutation({
   },
 });
 
-export const updateNodes = mutation({
+export const updateTasks = mutation({
   args: {
     remove: v.array(v.id("tasks")),
     update: v.array(

@@ -17,13 +17,13 @@ import {
 import { BasicLink } from "@/components/ui/link";
 
 import type { NodeProps } from "@xyflow/react";
-import type { NodeResult } from "convex/nodes";
+import type { TaskResult } from "convex/nodes";
 
-type StoryNodeProps = NodeProps & {
-  data: NodeResult["data"];
+type TaskNodeProps = NodeProps & {
+  data: TaskResult["data"];
 };
 
-export const StoryNode = ({ data }: StoryNodeProps) => {
+export const StoryNode = ({ data }: TaskNodeProps) => {
   return (
     <div className="flex flex-col items-start">
       <div>

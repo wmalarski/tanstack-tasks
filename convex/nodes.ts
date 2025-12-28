@@ -25,7 +25,7 @@ export const queryNodes = query({
 });
 
 const mapDocumentsToNodes = (tasks: Doc<"tasks">[], axis: Doc<"axis">[]) => {
-  return [...mapTasksToNodes(tasks), mapAxisToNodes(axis)];
+  return [...mapTasksToNodes(tasks), ...mapAxisToNodes(axis)];
 };
 
 const mapTasksToNodes = (tasks: Doc<"tasks">[]) => {
@@ -67,6 +67,7 @@ const mapAxisToNodeFactory = (axis: Doc<"axis">[], positions: number[]) => {
   return axis.map((doc, index) => {
     const position = positions[index];
     return {
+      connectable: false,
       data: { index: doc.index, label: doc.name },
       deletable: false,
       draggable: false,
@@ -106,3 +107,5 @@ const mapAxisToNodes = (axis: Doc<"axis">[]) => {
 };
 
 export type NodeResult = ReturnType<typeof mapDocumentsToNodes>[0];
+export type AxisResult = ReturnType<typeof mapAxisToNodes>[0];
+export type TaskResult = ReturnType<typeof mapTasksToNodes>[0];

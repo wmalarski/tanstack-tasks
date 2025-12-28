@@ -18,7 +18,7 @@ import {
   NodeFields,
   NodeFieldsSchema,
 } from "./node-fields";
-import { useInsertNodeMutationOptions } from "./services";
+import { useInsertTaskMutationOptions } from "./services";
 
 type InsertNodeDialogProps = {
   isOpen: boolean;
@@ -31,7 +31,7 @@ export const InsertNodeDialog = ({
   boardId,
   onIsOpenChange,
 }: InsertNodeDialogProps) => {
-  const insertNodeMutationOptions = useInsertNodeMutationOptions({
+  const insertNodeMutationOptions = useInsertTaskMutationOptions({
     onSuccess: () => onIsOpenChange(false),
   });
 
