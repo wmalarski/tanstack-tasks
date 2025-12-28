@@ -34,21 +34,21 @@ export const updateTasks = mutation({
     remove: v.array(v.id("tasks")),
     update: v.array(
       v.object({
-        axisX: v.id("axis"),
-        axisY: v.id("axis"),
+        axisX: v.optional(v.id("axis")),
+        axisY: v.optional(v.id("axis")),
         description: v.optional(v.string()),
         estimate: v.optional(v.number()),
         link: v.optional(v.string()),
-        nodeId: v.id("tasks"),
         positionX: v.optional(v.number()),
         positionY: v.optional(v.number()),
+        taskId: v.id("tasks"),
         title: v.optional(v.string()),
       }),
     ),
   },
   handler: async (ctx, args) => {
     const nodes = await Promise.all(
-      args.update.map((node) => ctx.db.get("tasks", node.nodeId)),
+      args.update.map((node) => ctx.db.get("tasks", node.taskId)),
     );
 
     const pairs = nodes.map((node, index) => ({
@@ -57,9 +57,9 @@ export const updateTasks = mutation({
     }));
 
     await Promise.all([
-      ...args.remove.map((nodeId) => ctx.db.delete("tasks", nodeId)),
+      ...args.remove.map((taskId) => ctx.db.delete("tasks", taskId)),
       ...pairs.map(({ update, node }) =>
-        ctx.db.patch("tasks", update.nodeId, {
+        ctx.db.patch("tasks", update.taskId, {
           axisX: update.axisX ?? node?.axisX,
           axisY: update.axisY ?? node?.axisY,
           description: update.description ?? node?.description,

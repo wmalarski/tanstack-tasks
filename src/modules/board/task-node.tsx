@@ -23,13 +23,13 @@ type TaskNodeProps = NodeProps & {
   data: TaskResult["data"];
 };
 
-export const StoryNode = ({ data }: TaskNodeProps) => {
+export const TaskNode = ({ data }: TaskNodeProps) => {
   return (
     <div className="flex flex-col items-start">
       <div>
         <span className="text-lg">{data.label}</span>
         {data.link ? <BasicLink href={data.link}>{data.link}</BasicLink> : null}
-        <StoryDropdown />
+        <TaskDropdown />
       </div>
       <span className="text-muted-foreground text-sm">{data.description}</span>
       <Badge>{data.estimate}</Badge>
@@ -37,7 +37,7 @@ export const StoryNode = ({ data }: TaskNodeProps) => {
   );
 };
 
-const StoryDropdown = () => {
+const TaskDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger render={<Button variant="outline" />}>

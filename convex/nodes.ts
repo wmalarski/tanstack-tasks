@@ -109,3 +109,4 @@ const mapAxisToNodes = (axis: Doc<"axis">[]) => {
 export type NodeResult = ReturnType<typeof mapDocumentsToNodes>[0];
 export type AxisResult = ReturnType<typeof mapAxisToNodes>[0];
 export type TaskResult = ReturnType<typeof mapTasksToNodes>[0];
+export type AxisOrientation = Doc<"axis">["orientation"];

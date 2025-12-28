@@ -7,32 +7,28 @@ import {
   type NodeChange,
   ReactFlow,
 } from "@xyflow/react";
-import {
-  type ComponentProps,
-  useCallback,
-  useEffect,
-  useEffectEvent,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useEffectEvent, useRef } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { convexQuery } from "@convex-dev/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
-import type { Doc, Id } from "convex/_generated/dataModel";
+import type { Id } from "convex/_generated/dataModel";
 import type { EdgeResult } from "convex/edges";
 import type { NodeResult } from "convex/nodes";
 
-import { InsertTaskDialog } from "./insert-task-dialog";
+import { AxisNode } from "./axis-node";
+import { GroupNode } from "./group-node";
 import {
   useUpdateEdgesMutationOptions,
   useUpdateTasksMutationOptions,
 } from "./services";
-import { StoryNode } from "./task-node";
+import { TaskNode } from "./task-node";
 
 const nodeTypes = {
-  default: StoryNode,
+  axis: AxisNode,
+  group: GroupNode,
+  task: TaskNode,
 };
 
 type EditorProps = {
@@ -44,9 +40,7 @@ type EditorProps = {
 export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
   const queryClient = useQueryClient();
 
-  const [isInsertNodeOpen, setIsInsertNodeOpen] = useState(false);
-
-  const throttledUpdate = useThrottledNodesUpdate(nodes);
+  const throttledUpdate = useThrottledTasksUpdate(nodes);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<NodeResult>[]) => {
@@ -109,8 +103,8 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
         boardId,
         insert: [
           {
-            source: params.source as Id<"nodes">,
-            target: params.target as Id<"nodes">,
+            source: params.source as Id<"tasks">,
+            target: params.target as Id<"tasks">,
           },
         ],
         remove: [],
@@ -118,10 +112,6 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
     },
     [boardId, queryClient.setQueryData, updateEdgesMutation.mutate],
   );
-
-  const onPaneClick: ComponentProps<typeof ReactFlow>["onPaneClick"] = () => {
-    setIsInsertNodeOpen((current) => !current);
-  };
 
   // const combainedNodes = useMemo(() => {
   //   return [
@@ -174,25 +164,17 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
         onConnect={onConnect}
         onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
-        onPaneClick={onPaneClick}
-      />
-      <InsertTaskDialog
-        boardId={boardId}
-        isOpen={isInsertNodeOpen}
-        onIsOpenChange={setIsInsertNodeOpen}
       />
     </div>
   );
 };
 
-const useAxisNodes = (board: Doc<"boards">) => {};
-
-const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
+const useThrottledTasksUpdate = (nodes: NodeResult[]) => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const changesRef = useRef<NodeChange<NodeResult>[]>([]);
 
-  const updateNodesMutationOptions = useUpdateTasksMutationOptions();
-  const updateNodesMutation = useMutation(updateNodesMutationOptions);
+  const updateTasksMutationOptions = useUpdateTasksMutationOptions();
+  const updateTasksMutation = useMutation(updateTasksMutationOptions);
 
   useEffect(() => {
     return () => {
@@ -203,7 +185,7 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
   }, []);
 
   return useEffectEvent((updates: NodeChange<NodeResult>[]) => {
-    if (timeoutRef.current || updateNodesMutation.isPending) {
+    if (timeoutRef.current || updateTasksMutation.isPending) {
       changesRef.current.push(...updates);
       return;
     }
@@ -221,7 +203,9 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
         change.type === "remove" && removedNodeIds.push(change.id);
       });
 
-      const changedNodes = nodes.filter((node) => changedNodeIds.has(node.id));
+      const changedNodes = nodes.filter(
+        (node) => changedNodeIds.has(node.id) && node.type === "task",
+      );
 
       const applied = applyNodeChanges(changes, changedNodes);
 
@@ -229,12 +213,12 @@ const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
         return;
       }
 
-      updateNodesMutation.mutate({
-        remove: removedNodeIds as Id<"nodes">[],
+      updateTasksMutation.mutate({
+        remove: removedNodeIds as Id<"tasks">[],
         update: applied.map((node) => ({
-          nodeId: node.id,
           positionX: node.position.x,
           positionY: node.position.y,
+          taskId: node.id as Id<"tasks">,
         })),
       });
     }, 1000);
