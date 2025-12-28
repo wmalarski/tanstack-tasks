@@ -9,7 +9,7 @@ import { buttonVariants } from "./button";
 export type LinkProps = ComponentProps<"a"> &
   VariantProps<typeof buttonVariants>;
 
-const BasicLink = ({
+export const BasicLink = ({
   size,
   variant = "link",
   className,

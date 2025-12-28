@@ -29,6 +29,11 @@ import {
   useUpdateEdgesMutationOptions,
   useUpdateNodesMutationOptions,
 } from "./services";
+import { StoryNode } from "./story-node";
+
+const nodeTypes = {
+  default: StoryNode,
+};
 
 type EditorProps = {
   boardId: Id<"boards">;
@@ -124,6 +129,7 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
         edges={edges}
         fitView
         nodes={nodes}
+        nodeTypes={nodeTypes}
         onConnect={onConnect}
         onEdgesChange={onEdgesChange}
         onNodesChange={onNodesChange}
