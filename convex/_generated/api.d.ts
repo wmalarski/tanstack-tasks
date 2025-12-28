@@ -9,10 +9,12 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as axis from "../axis.js";
 import type * as boards from "../boards.js";
 import type * as edges from "../edges.js";
 import type * as http from "../http.js";
 import type * as nodes from "../nodes.js";
+import type * as tasks from "../tasks.js";
 
 import type {
   ApiFromModules,
@@ -22,10 +24,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  axis: typeof axis;
   boards: typeof boards;
   edges: typeof edges;
   http: typeof http;
   nodes: typeof nodes;
+  tasks: typeof tasks;
 }>;
 
 /**

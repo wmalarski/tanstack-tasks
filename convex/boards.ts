@@ -49,21 +49,33 @@ export const insertBoard = mutation({
       throw new Error("Not signed in");
     }
 
-    return ctx.db.insert("boards", {
-      axis: { x: [], y: [] },
+    const board = await ctx.db.insert("boards", {
       description: args.description ?? "",
       title: args.title,
       user: user._id,
     });
+
+    const shared = { board, index: 0, size: 100 };
+
+    await Promise.all([
+      ctx.db.insert("axis", {
+        ...shared,
+        name: "X",
+        orientation: "horizontal",
+      }),
+      ctx.db.insert("axis", {
+        ...shared,
+        name: "Y",
+        orientation: "vertical",
+      }),
+    ]);
+
+    return board;
   },
 });
 
 export const updateBoard = mutation({
   args: {
-    axis: v.object({
-      x: v.array(v.object({ id: v.string(), name: v.string() })),
-      y: v.array(v.object({ id: v.string(), name: v.string() })),
-    }),
     boardId: v.id("boards"),
     description: v.optional(v.string()),
     title: v.optional(v.string()),
@@ -83,7 +95,6 @@ export const updateBoard = mutation({
 
     return ctx.db.patch("boards", args.boardId, {
       ...board,
-      axis: args.axis ?? board.axis,
       description: args.description ?? board.description,
       title: args.title ?? board.title,
     });

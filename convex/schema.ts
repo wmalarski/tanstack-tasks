@@ -2,23 +2,26 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  axis: defineTable({
+    board: v.id("boards"),
+    index: v.number(),
+    name: v.string(),
+    orientation: v.union(v.literal("vertical"), v.literal("horizontal")),
+    size: v.number(),
+  }).index("board", ["board"]),
   boards: defineTable({
-    axis: v.object({
-      x: v.array(v.object({ id: v.string(), name: v.string() })),
-      y: v.array(v.object({ id: v.string(), name: v.string() })),
-    }),
     description: v.string(),
     title: v.string(),
     user: v.string(),
   }).index("user", ["user"]),
   edges: defineTable({
     board: v.id("boards"),
-    source: v.id("nodes"),
-    target: v.id("nodes"),
+    source: v.id("tasks"),
+    target: v.id("tasks"),
   }).index("board", ["board"]),
-  nodes: defineTable({
-    axisX: v.string(),
-    axisY: v.string(),
+  tasks: defineTable({
+    axisX: v.id("axis"),
+    axisY: v.id("axis"),
     board: v.id("boards"),
     description: v.string(),
     estimate: v.number(),

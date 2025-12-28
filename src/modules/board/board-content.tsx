@@ -36,6 +36,10 @@ const BoardEditor = ({ boardId }: BoardEditorProps) => {
     convexQuery(api.edges.queryEdges, { boardId }),
   );
 
+  const getBoardQuery = useSuspenseQuery(
+    convexQuery(api.boards.queryBoard, { boardId }),
+  );
+
   return (
     <Editor
       boardId={boardId}

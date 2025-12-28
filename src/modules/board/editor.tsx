@@ -12,6 +12,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -20,7 +21,7 @@ import "@xyflow/react/dist/style.css";
 import { convexQuery } from "@convex-dev/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
-import type { Id } from "convex/_generated/dataModel";
+import type { Doc, Id } from "convex/_generated/dataModel";
 import type { EdgeResult } from "convex/edges";
 import type { NodeResult } from "convex/nodes";
 
@@ -123,12 +124,53 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
     setIsInsertNodeOpen((current) => !current);
   };
 
+  const combainedNodes = useMemo(() => {
+    return [
+      {
+        id: "A",
+        position: { x: 0, y: 0 },
+        style: {
+          height: 240,
+          width: 270,
+        },
+        type: "group",
+      },
+      {
+        data: { label: "Child Node 1" },
+        extent: "parent",
+        id: "A-1",
+        parentId: "A",
+        position: { x: 10, y: 10 },
+        type: "input",
+      },
+      {
+        data: { label: "Child Node 2" },
+        extent: "parent",
+        id: "A-2",
+        parentId: "A",
+        position: { x: 10, y: 120 },
+      },
+      {
+        data: { label: "Node B" },
+        id: "B",
+        position: { x: -150, y: 250 },
+        type: "output",
+      },
+      {
+        data: { label: "Node C" },
+        id: "C",
+        position: { x: 150, y: 250 },
+        type: "output",
+      },
+    ];
+  }, [nodes]);
+
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <ReactFlow
         edges={edges}
         fitView
-        nodes={nodes}
+        nodes={combainedNodes}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onEdgesChange={onEdgesChange}
@@ -143,6 +185,8 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
     </div>
   );
 };
+
+const useAxisNodes = (board: Doc<"boards">) => {};
 
 const useThrottledNodesUpdate = (nodes: NodeResult[]) => {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);

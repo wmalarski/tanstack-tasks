@@ -2,96 +2,34 @@ import type { Node } from "@xyflow/react";
 import { v } from "convex/values";
 
 import type { Doc } from "./_generated/dataModel";
-import { mutation, query } from "./_generated/server";
+import { query } from "./_generated/server";
 
 export const queryNodes = query({
   args: {
     boardId: v.id("boards"),
   },
   handler: async (ctx, args) => {
-    const result = await ctx.db
-      .query("nodes")
-      .filter((q) => q.eq(q.field("board"), args.boardId))
-      .collect();
-
-    return mapDocumentsToNodes(result);
-  },
-});
-
-export const insertNode = mutation({
-  args: {
-    axisX: v.string(),
-    axisY: v.string(),
-    boardId: v.id("boards"),
-    description: v.string(),
-    estimate: v.number(),
-    link: v.optional(v.string()),
-    positionX: v.number(),
-    positionY: v.number(),
-    title: v.string(),
-  },
-  handler: async (ctx, args) => {
-    return ctx.db.insert("nodes", {
-      axisX: args.axisX,
-      axisY: args.axisY,
-      board: args.boardId,
-      description: args.description,
-      estimate: args.estimate,
-      link: args.link,
-      positionX: args.positionX,
-      positionY: args.positionY,
-      title: args.title,
-    });
-  },
-});
-
-export const updateNodes = mutation({
-  args: {
-    remove: v.array(v.id("nodes")),
-    update: v.array(
-      v.object({
-        axisX: v.optional(v.string()),
-        axisY: v.optional(v.string()),
-        description: v.optional(v.string()),
-        estimate: v.optional(v.number()),
-        link: v.optional(v.string()),
-        nodeId: v.id("nodes"),
-        positionX: v.optional(v.number()),
-        positionY: v.optional(v.number()),
-        title: v.optional(v.string()),
-      }),
-    ),
-  },
-  handler: async (ctx, args) => {
-    const nodes = await Promise.all(
-      args.update.map((node) => ctx.db.get("nodes", node.nodeId)),
-    );
-
-    const pairs = nodes.map((node, index) => ({
-      node,
-      update: args.update[index],
-    }));
-
-    await Promise.all([
-      ...args.remove.map((nodeId) => ctx.db.delete("nodes", nodeId)),
-      ...pairs.map(({ update, node }) =>
-        ctx.db.patch("nodes", update.nodeId, {
-          axisX: update.axisX ?? node?.axisX,
-          axisY: update.axisY ?? node?.axisY,
-          description: update.description ?? node?.description,
-          estimate: update.estimate ?? node?.estimate,
-          link: update.link ?? node?.link,
-          positionX: update.positionX ?? node?.positionX,
-          positionY: update.positionY ?? node?.positionY,
-          title: update.title ?? node?.title,
-        }),
-      ),
+    const [tasks, axis] = await Promise.all([
+      ctx.db
+        .query("tasks")
+        .filter((q) => q.eq(q.field("board"), args.boardId))
+        .collect(),
+      ctx.db
+        .query("axis")
+        .filter((q) => q.eq(q.field("board"), args.boardId))
+        .collect(),
     ]);
+
+    return mapDocumentsToNodes(tasks, axis);
   },
 });
 
-const mapDocumentsToNodes = (docs: Doc<"nodes">[]) => {
-  return docs.map(
+const mapDocumentsToNodes = (tasks: Doc<"tasks">[], axis: Doc<"axis">[]) => {
+  return [...mapTasksToNodes(tasks), mapAxisToNodes(axis)];
+};
+
+const mapTasksToNodes = (tasks: Doc<"tasks">[]) => {
+  return tasks.map(
     (doc) =>
       ({
         data: {
@@ -102,10 +40,69 @@ const mapDocumentsToNodes = (docs: Doc<"nodes">[]) => {
           label: doc.title,
           link: doc.link,
         },
+        deletable: false,
         id: doc._id,
         position: { x: doc.positionX, y: doc.positionY },
+        type: "task" as const,
       }) satisfies Node,
   );
+};
+
+const sortAxis = (left: Doc<"axis">, right: Doc<"axis">) => {
+  return left.index - right.index;
+};
+
+const getPositions = (entries: Doc<"axis">[]) => {
+  return entries.reduce(
+    (prev, current) => {
+      const last = prev[prev.length - 1];
+      prev.push(last + current.size);
+      return prev;
+    },
+    [0],
+  );
+};
+
+const mapAxisToNodeFactory = (axis: Doc<"axis">[], positions: number[]) => {
+  return axis.map((doc, index) => {
+    const position = positions[index];
+    return {
+      data: { index: doc.index, label: doc.name },
+      deletable: false,
+      draggable: false,
+      id: doc._id,
+      position:
+        doc.orientation === "vertical"
+          ? { x: position, y: 0 }
+          : { x: 0, y: position },
+      selectable: false,
+      style:
+        doc.orientation === "vertical"
+          ? { height: 100, width: doc.size }
+          : { height: doc.size, width: 100 },
+      type: "axis" as const,
+    } satisfies Node;
+  });
+};
+
+const mapAxisToNodes = (axis: Doc<"axis">[]) => {
+  const vertical: Doc<"axis">[] = [];
+  const horizontal: Doc<"axis">[] = [];
+
+  axis.forEach((entry) => {
+    (entry.orientation === "vertical" ? vertical : horizontal).push(entry);
+  });
+
+  vertical.sort(sortAxis);
+  horizontal.sort(sortAxis);
+
+  const verticalPositions = getPositions(vertical);
+  const horizontalPositions = getPositions(horizontal);
+
+  return [
+    ...mapAxisToNodeFactory(vertical, verticalPositions),
+    ...mapAxisToNodeFactory(horizontal, horizontalPositions),
+  ];
 };
 
 export type NodeResult = ReturnType<typeof mapDocumentsToNodes>[0];

@@ -21,12 +21,7 @@ export const queryEdges = query({
 export const updateEdges = mutation({
   args: {
     boardId: v.id("boards"),
-    insert: v.array(
-      v.object({
-        source: v.id("nodes"),
-        target: v.id("nodes"),
-      }),
-    ),
+    insert: v.array(v.object({ source: v.id("tasks"), target: v.id("tasks") })),
     remove: v.array(v.id("edges")),
   },
   handler: async (ctx, args) => {
