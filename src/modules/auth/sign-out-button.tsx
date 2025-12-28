@@ -9,9 +9,7 @@ export const SignOutButton = () => {
   const signOutMutation = useMutation(signOutMutationOptions);
 
   const formAction = async () => {
-    try {
-      await signOutMutation.mutateAsync();
-    } catch {}
+    await signOutMutation.mutateAsync();
   };
 
   return (

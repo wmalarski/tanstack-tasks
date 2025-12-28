@@ -30,9 +30,7 @@ export const InsertBoardDialog = () => {
       title: "",
     } as BoardFieldsResult,
     onSubmit: async (data) => {
-      try {
-        await insertBoardMutation.mutateAsync(data.value);
-      } catch {}
+      await insertBoardMutation.mutateAsync(data.value);
     },
     validators: {
       onSubmit: BoardFieldsSchema,

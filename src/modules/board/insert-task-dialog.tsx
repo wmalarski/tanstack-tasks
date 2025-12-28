@@ -20,17 +20,21 @@ import {
 } from "./node-fields";
 import { useInsertTaskMutationOptions } from "./services";
 
-type InsertNodeDialogProps = {
+type InsertTaskDialogProps = {
   isOpen: boolean;
   boardId: Id<"boards">;
+  axisX: Id<"axis">;
+  axisY: Id<"axis">;
   onIsOpenChange: (isOpen: boolean) => void;
 };
 
-export const InsertNodeDialog = ({
+export const InsertTaskDialog = ({
   isOpen,
+  axisX,
+  axisY,
   boardId,
   onIsOpenChange,
-}: InsertNodeDialogProps) => {
+}: InsertTaskDialogProps) => {
   const insertNodeMutationOptions = useInsertTaskMutationOptions({
     onSuccess: () => onIsOpenChange(false),
   });
@@ -40,21 +44,19 @@ export const InsertNodeDialog = ({
   const insertNodeForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
     onSubmit: async (data) => {
-      try {
-        await insertNodeMutation.mutateAsync({
-          axisX: "",
-          axisY: "",
-          boardId,
-          description: data.value.description,
-          estimate: Number(data.value.estimate),
-          link: data.value.link,
-          positionX: 0,
-          positionY: 0,
-          title: data.value.title,
-        });
+      await insertNodeMutation.mutateAsync({
+        axisX,
+        axisY,
+        boardId,
+        description: data.value.description,
+        estimate: Number(data.value.estimate),
+        link: data.value.link,
+        positionX: 0,
+        positionY: 0,
+        title: data.value.title,
+      });
 
-        insertNodeForm.reset();
-      } catch {}
+      insertNodeForm.reset();
     },
     validators: {
       onSubmit: NodeFieldsSchema,

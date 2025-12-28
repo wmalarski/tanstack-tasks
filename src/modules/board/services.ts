@@ -12,6 +12,7 @@ export const useInsertBoardMutationOptions = () => {
     onSuccess: async (data) => {
       await navigate({ params: { boardId: data }, to: "/board/$boardId" });
     },
+    throwOnError: false,
   });
 };
 
@@ -26,6 +27,7 @@ export const useUpdateBoardMutationOptions = ({
   return mutationOptions({
     mutationFn: updateBoardMutationFn,
     onSuccess,
+    throwOnError: false,
   });
 };
 
@@ -40,6 +42,7 @@ export const useInsertTaskMutationOptions = ({
   return mutationOptions({
     mutationFn: insertNodeMutationFn,
     onSuccess,
+    throwOnError: false,
   });
 };
 
@@ -54,6 +57,7 @@ export const useInsertAxisMutationOptions = ({
   return mutationOptions({
     mutationFn: insertAxisMutationFn,
     onSuccess,
+    throwOnError: false,
   });
 };
 
@@ -68,6 +72,7 @@ export const useUpdateAxisMutationOptions = ({
   return mutationOptions({
     mutationFn: updateAxisMutationFn,
     onSuccess,
+    throwOnError: false,
   });
 };
 
@@ -82,6 +87,7 @@ export const useDeleteAxisMutationOptions = ({
   return mutationOptions({
     mutationFn: deleteAxisMutationFn,
     onSuccess,
+    throwOnError: false,
   });
 };
 
@@ -89,6 +95,7 @@ export const useUpdateTasksMutationOptions = () => {
   const updateNodesMutationFn = useConvexMutation(api.tasks.updateTasks);
   return mutationOptions({
     mutationFn: updateNodesMutationFn,
+    throwOnError: false,
   });
 };
 
@@ -96,5 +103,6 @@ export const useUpdateEdgesMutationOptions = () => {
   const updateEdgesMutationFn = useConvexMutation(api.edges.updateEdges);
   return mutationOptions({
     mutationFn: updateEdgesMutationFn,
+    throwOnError: false,
   });
 };

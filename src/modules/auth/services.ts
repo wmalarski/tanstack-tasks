@@ -27,6 +27,7 @@ export const useSignInMutationOptions = () => {
     async onSuccess() {
       await navigate({ to: "/boards" });
     },
+    throwOnError: false,
   });
 };
 
@@ -50,6 +51,7 @@ export const useSignUpMutationOptions = () => {
     async onSuccess() {
       await navigate({ to: "/" });
     },
+    throwOnError: false,
   });
 };
 
@@ -71,5 +73,6 @@ export const useSignOutMutationOptions = () => {
       context.client.setQueryData(userQueryOptions.queryKey, undefined);
       await navigate({ to: "/" });
     },
+    throwOnError: false,
   });
 };

@@ -18,9 +18,7 @@ export const SignInForm = () => {
       password: "",
     },
     onSubmit: async (data) => {
-      try {
-        await signInMutation.mutateAsync(data.value);
-      } catch {}
+      await signInMutation.mutateAsync(data.value);
     },
     validators: {
       onSubmit: AuthSchema,

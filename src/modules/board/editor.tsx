@@ -24,7 +24,7 @@ import type { Doc, Id } from "convex/_generated/dataModel";
 import type { EdgeResult } from "convex/edges";
 import type { NodeResult } from "convex/nodes";
 
-import { InsertNodeDialog } from "./insert-node-dialog";
+import { InsertTaskDialog } from "./insert-task-dialog";
 import {
   useUpdateEdgesMutationOptions,
   useUpdateTasksMutationOptions,
@@ -176,7 +176,7 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
         onNodesChange={onNodesChange}
         onPaneClick={onPaneClick}
       />
-      <InsertNodeDialog
+      <InsertTaskDialog
         boardId={boardId}
         isOpen={isInsertNodeOpen}
         onIsOpenChange={setIsInsertNodeOpen}

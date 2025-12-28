@@ -86,12 +86,10 @@ const InsertAxisForm = ({
         name: data.value.name,
       });
 
-      try {
-        await updateBoardMutation.mutateAsync({
-          axis: { ...board.axis, [axisKey]: copy },
-          boardId: board._id,
-        });
-      } catch {}
+      await updateBoardMutation.mutateAsync({
+        axis: { ...board.axis, [axisKey]: copy },
+        boardId: board._id,
+      });
     },
     validators: { onSubmit: AxisFieldsSchema },
   });
@@ -137,12 +135,10 @@ const UpdateAxisForm = ({
         name: data.value.name,
       });
 
-      try {
-        await updateBoardMutation.mutateAsync({
-          axis: { ...board.axis, [axisKey]: copy },
-          boardId: board._id,
-        });
-      } catch {}
+      await updateBoardMutation.mutateAsync({
+        axis: { ...board.axis, [axisKey]: copy },
+        boardId: board._id,
+      });
     },
     validators: { onSubmit: AxisFieldsSchema },
   });
@@ -258,12 +254,10 @@ const DeleteAxisForm = ({ index, board, axisKey }: DeleteAxisFormProps) => {
     const copy = [...board.axis[axisKey]];
     copy.splice(index, 1);
 
-    try {
-      await updateBoardMutation.mutateAsync({
-        axis: { ...board.axis, [axisKey]: copy },
-        boardId: board._id,
-      });
-    } catch {}
+    await updateBoardMutation.mutateAsync({
+      axis: { ...board.axis, [axisKey]: copy },
+      boardId: board._id,
+    });
   };
 
   return (
