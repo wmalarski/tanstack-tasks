@@ -11,8 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { useAppForm } from "@/integrations/tanstack-form";
 
-import { useMutation } from "@tanstack/react-query";
-import type { Id } from "convex/_generated/dataModel";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import {
+  mutationOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { applyNodeChanges } from "@xyflow/react";
+import { api } from "convex/_generated/api";
+import type { Doc, Id } from "convex/_generated/dataModel";
 import { useState } from "react";
 
 import {
@@ -35,6 +42,14 @@ export const InsertTaskDialog = ({
 }: InsertTaskDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const queryClient = useQueryClient();
+
+  // const store = useStore((state) => state.nodes)
+  const mutationFn = useConvexMutation(api.boards.applyBoardChanges);
+  const updateMutation = useMutation(
+    mutationOptions({ mutationFn, throwOnError: false }),
+  );
+
   const insertNodeMutationOptions = useInsertTaskMutationOptions({
     onSuccess: () => setIsOpen(false),
   });
@@ -44,16 +59,40 @@ export const InsertTaskDialog = ({
   const insertNodeForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
     onSubmit: async (data) => {
-      await insertNodeMutation.mutateAsync({
-        axisX,
-        axisY,
+      const nodeChanges = [
+        {
+          item: {
+            data: {
+              axisX,
+              axisY,
+              description: data.value.description,
+              estimate: +data.value.estimate,
+              link: data.value.link,
+              title: data.value.title,
+            },
+            id: String(Date.now()),
+            position: { x: 0, y: 0 },
+          },
+          type: "add" as const,
+        },
+      ];
+
+      const boardQueryKey = convexQuery(api.boards.queryBoard, {
         boardId,
-        description: data.value.description,
-        estimate: Number(data.value.estimate),
-        link: data.value.link,
-        positionX: 0,
-        positionY: 0,
-        title: data.value.title,
+      }).queryKey;
+
+      queryClient.setQueryData(
+        boardQueryKey,
+        (current: Doc<"boards">): Doc<"boards"> => ({
+          ...current,
+          tasks: applyNodeChanges(nodeChanges, current.tasks),
+        }),
+      );
+
+      await updateMutation.mutateAsync({
+        boardId,
+        edgeChanges: [],
+        nodeChanges,
       });
 
       insertNodeForm.reset();

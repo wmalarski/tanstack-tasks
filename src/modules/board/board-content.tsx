@@ -18,12 +18,13 @@ export const BoardContent = ({ boardId }: BoardContentProps) => {
     convexQuery(api.edges.queryEdges, { boardId }),
   );
 
-  // const getBoardQuery = useSuspenseQuery(
-  //   convexQuery(api.boards.queryBoard, { boardId }),
-  // );
+  const getBoardQuery = useSuspenseQuery(
+    convexQuery(api.boards.queryBoard, { boardId }),
+  );
 
   return (
     <Editor
+      board={getBoardQuery.data}
       boardId={boardId}
       edges={getEdgesQuery.data}
       nodes={getNodesQuery.data}

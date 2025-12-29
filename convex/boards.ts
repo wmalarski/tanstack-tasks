@@ -1,3 +1,4 @@
+import { applyEdgeChanges, applyNodeChanges } from "@xyflow/react";
 import { paginationOptsValidator } from "convex/server";
 import { v } from "convex/values";
 
@@ -50,7 +51,11 @@ export const insertBoard = mutation({
     }
 
     const board = await ctx.db.insert("boards", {
+      axisX: [{ id: crypto.randomUUID(), name: "X", size: 300 }],
+      axisY: [{ id: crypto.randomUUID(), name: "Y", size: 300 }],
       description: args.description ?? "",
+      edges: [],
+      tasks: [],
       title: args.title,
       user: user._id,
     });
@@ -97,6 +102,75 @@ export const updateBoard = mutation({
       ...board,
       description: args.description ?? board.description,
       title: args.title ?? board.title,
+    });
+  },
+});
+
+export const applyBoardChanges = mutation({
+  args: {
+    boardId: v.id("boards"),
+    edgeChanges: v.array(
+      v.union(
+        v.object({ id: v.string(), type: v.literal("remove") }),
+        v.object({
+          item: v.object({
+            id: v.string(),
+            source: v.string(),
+            target: v.string(),
+          }),
+          type: v.literal("add"),
+        }),
+      ),
+    ),
+    nodeChanges: v.array(
+      v.union(
+        v.object({
+          dragging: v.optional(v.boolean()),
+          id: v.string(),
+          position: v.optional(
+            v.object({
+              x: v.number(),
+              y: v.number(),
+            }),
+          ),
+          type: v.literal("position"),
+        }),
+        v.object({ id: v.string(), type: v.literal("remove") }),
+        v.object({
+          item: v.object({
+            data: v.object({
+              axisX: v.string(),
+              axisY: v.string(),
+              description: v.string(),
+              estimate: v.number(),
+              link: v.optional(v.string()),
+              title: v.string(),
+            }),
+            id: v.string(),
+            position: v.object({
+              x: v.number(),
+              y: v.number(),
+            }),
+          }),
+          type: v.literal("add"),
+        }),
+      ),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const board = await ctx.db.get("boards", args.boardId);
+
+    if (!board) {
+      throw new Error("Board not found");
+    }
+
+    const updatedEdges = applyEdgeChanges(args.edgeChanges, board.edges);
+    const updatedTasks = applyNodeChanges(args.nodeChanges, board.tasks);
+
+    return ctx.db.patch("boards", args.boardId, {
+      ...board,
+      edges: updatedEdges,
+      tasks: updatedTasks,
     });
   },
 });
