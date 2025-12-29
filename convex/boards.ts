@@ -4,6 +4,7 @@ import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
+import { EdgeSchema, PositionSchema, TaskSchema } from "./schema";
 
 export const queryBoards = query({
   args: {
@@ -112,14 +113,7 @@ export const applyBoardChanges = mutation({
     edgeChanges: v.array(
       v.union(
         v.object({ id: v.string(), type: v.literal("remove") }),
-        v.object({
-          item: v.object({
-            id: v.string(),
-            source: v.string(),
-            target: v.string(),
-          }),
-          type: v.literal("add"),
-        }),
+        v.object({ item: EdgeSchema, type: v.literal("add") }),
       ),
     ),
     nodeChanges: v.array(
@@ -127,31 +121,12 @@ export const applyBoardChanges = mutation({
         v.object({
           dragging: v.optional(v.boolean()),
           id: v.string(),
-          position: v.optional(
-            v.object({
-              x: v.number(),
-              y: v.number(),
-            }),
-          ),
+          position: v.optional(PositionSchema),
           type: v.literal("position"),
         }),
         v.object({ id: v.string(), type: v.literal("remove") }),
         v.object({
-          item: v.object({
-            data: v.object({
-              axisX: v.string(),
-              axisY: v.string(),
-              description: v.string(),
-              estimate: v.number(),
-              link: v.optional(v.string()),
-              title: v.string(),
-            }),
-            id: v.string(),
-            position: v.object({
-              x: v.number(),
-              y: v.number(),
-            }),
-          }),
+          item: TaskSchema,
           type: v.literal("add"),
         }),
       ),

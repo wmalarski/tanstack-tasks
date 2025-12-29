@@ -316,8 +316,6 @@ const useThrottledUpdates = () => {
 const DEFAULT_AXIS_SIZE = 200;
 
 const getPositions = (entries: Doc<"boards">["axisX"]) => {
-  console.log("[getPositions]", entries);
-
   return entries.reduce(
     (prev, current) => {
       const last = prev[prev.length - 1];
