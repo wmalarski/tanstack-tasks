@@ -46,6 +46,7 @@ const nodeDefaults: Record<NodeResult["type"], Partial<Node>> = {
   task: {
     deletable: false,
     extent: "parent",
+    zIndex: 100,
   },
 };
 
@@ -66,10 +67,12 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
 
       const nodesQueryOptions = convexQuery(api.nodes.queryNodes, { boardId });
 
-      queryClient.setQueryData(
+      const result = queryClient.setQueryData(
         nodesQueryOptions.queryKey,
         (current: NodeResult[]) => applyNodeChanges(changes, current),
       );
+
+      console.log("[onNodesChange]", { changes, result });
     },
     [boardId, queryClient.setQueryData, throttledUpdate],
   );
@@ -181,7 +184,7 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
       <ReactFlow
         edges={edges}
         fitView
-        nodes={updatedNodes}
+        nodes={nodes}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onEdgesChange={onEdgesChange}

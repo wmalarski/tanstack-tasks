@@ -56,6 +56,8 @@ export const updateTasks = mutation({
       update: args.update[index],
     }));
 
+    // const edges = ctx.db.query("edges").filter(q => q.eq(q.field("source"), args))
+
     await Promise.all([
       ...args.remove.map((taskId) => ctx.db.delete("tasks", taskId)),
       ...pairs.map(({ update, node }) =>
