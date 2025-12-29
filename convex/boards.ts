@@ -4,7 +4,7 @@ import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 import { authComponent } from "./auth";
-import { EdgeSchema, PositionSchema, TaskSchema } from "./schema";
+import { AxisSchema, EdgeSchema, PositionSchema, TaskSchema } from "./schema";
 
 export const queryBoards = query({
   args: {
@@ -82,6 +82,8 @@ export const insertBoard = mutation({
 
 export const updateBoard = mutation({
   args: {
+    axisX: v.optional(v.array(AxisSchema)),
+    axisY: v.optional(v.array(AxisSchema)),
     boardId: v.id("boards"),
     description: v.optional(v.string()),
     title: v.optional(v.string()),
@@ -101,6 +103,8 @@ export const updateBoard = mutation({
 
     return ctx.db.patch("boards", args.boardId, {
       ...board,
+      axisX: args.axisX ?? board.axisX,
+      axisY: args.axisY ?? board.axisY,
       description: args.description ?? board.description,
       title: args.title ?? board.title,
     });
@@ -128,6 +132,11 @@ export const applyBoardChanges = mutation({
         v.object({
           item: TaskSchema,
           type: v.literal("add"),
+        }),
+        v.object({
+          id: v.string(),
+          item: TaskSchema,
+          type: v.literal("replace"),
         }),
       ),
     ),
