@@ -55,7 +55,7 @@ export const insertBoard = mutation({
       user: user._id,
     });
 
-    const shared = { board, index: 0, size: 100 };
+    const shared = { board, index: 0, size: 300 };
 
     await Promise.all([
       ctx.db.insert("axis", {

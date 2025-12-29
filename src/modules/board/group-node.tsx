@@ -10,7 +10,7 @@ type GroupNodeProps = NodeProps & {
 export const GroupNode = ({ data }: GroupNodeProps) => {
   return (
     <div className="flex flex-col items-start">
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <pre>{data.label}</pre>
       <InsertTaskDialog
         axisX={data.axisX}
         axisY={data.axisY}

@@ -4,10 +4,11 @@ import {
   applyNodeChanges,
   type Connection,
   type EdgeChange,
+  type Node,
   type NodeChange,
   ReactFlow,
 } from "@xyflow/react";
-import { useCallback, useEffect, useEffectEvent, useRef } from "react";
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { convexQuery } from "@convex-dev/react-query";
@@ -29,6 +30,23 @@ const nodeTypes = {
   axis: AxisNode,
   group: GroupNode,
   task: TaskNode,
+};
+
+const nodeDefaults: Record<NodeResult["type"], Partial<Node>> = {
+  axis: {
+    connectable: false,
+    deletable: false,
+    draggable: false,
+  },
+  group: {
+    connectable: false,
+    deletable: false,
+    draggable: false,
+  },
+  task: {
+    deletable: false,
+    extent: "parent",
+  },
 };
 
 type EditorProps = {
@@ -154,12 +172,16 @@ export const Editor = ({ boardId, nodes, edges }: EditorProps) => {
   //   ];
   // }, [nodes]);
 
+  const updatedNodes = useMemo(() => {
+    return nodes.map((node) => ({ ...nodeDefaults[node.type], ...node }));
+  }, [nodes.map]);
+
   return (
     <div style={{ height: "100vh", width: "100vw" }}>
       <ReactFlow
         edges={edges}
         fitView
-        nodes={nodes}
+        nodes={updatedNodes}
         nodeTypes={nodeTypes}
         onConnect={onConnect}
         onEdgesChange={onEdgesChange}

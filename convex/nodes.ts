@@ -58,6 +58,10 @@ const mapDocumentsToNodes = (
   ];
 };
 
+const getParentId = (axisX: Id<"axis">, axisY: Id<"axis">) => {
+  return `${axisX}-${axisY}`;
+};
+
 const mapTasksToNodes = (tasks: Doc<"tasks">[]) => {
   return tasks.map(
     (doc) =>
@@ -70,8 +74,8 @@ const mapTasksToNodes = (tasks: Doc<"tasks">[]) => {
           label: doc.title,
           link: doc.link,
         },
-        deletable: false,
         id: doc._id,
+        parentId: getParentId(doc.axisX, doc.axisY),
         position: { x: doc.positionX, y: doc.positionY },
         type: "task" as const,
       }) satisfies Node,
@@ -100,6 +104,8 @@ type MapAxisToNodesArgs = {
   positions: number[];
 };
 
+const DEFAULT_AXIS_SIZE = 200;
+
 const mapAxisToNodes = ({
   axis,
   boardId,
@@ -109,20 +115,16 @@ const mapAxisToNodes = ({
   return axis.map((doc, index) => {
     const position = positions[index];
     return {
-      connectable: false,
       data: { boardId, index: doc.index, label: doc.name, orientation },
-      deletable: false,
-      draggable: false,
       id: doc._id,
       position:
-        doc.orientation === "vertical"
-          ? { x: position, y: 0 }
-          : { x: 0, y: position },
-      selectable: false,
+        doc.orientation === "horizontal"
+          ? { x: position, y: -DEFAULT_AXIS_SIZE }
+          : { x: -DEFAULT_AXIS_SIZE, y: position },
       style:
-        doc.orientation === "vertical"
-          ? { height: 100, width: doc.size }
-          : { height: doc.size, width: 100 },
+        doc.orientation === "horizontal"
+          ? { height: DEFAULT_AXIS_SIZE, width: doc.size }
+          : { height: doc.size, width: DEFAULT_AXIS_SIZE },
       type: "axis" as const,
     } satisfies Node;
   });
@@ -160,20 +162,16 @@ const mapAxisToGroupNodes = ({
   return horizontal.flatMap((axisX, column) => {
     return vertical.map((axisY, row) => {
       return {
-        connectable: false,
         data: {
           axisX: axisX._id,
           axisY: axisY._id,
           boardId,
-          label: `${column}:${row}`,
+          label: `H:${axisY.name}-V:${axisX.name}`,
         },
-        deletable: false,
-        draggable: false,
-        id: `${axisX._id}-${axisY._id}`,
+        id: getParentId(axisX._id, axisY._id),
         position: { x: horizontalPositions[column], y: verticalPositions[row] },
-        selectable: false,
         style: { height: axisY.size, width: axisX.size },
-        type: "group",
+        type: "group" as const,
       } satisfies Node;
     });
   });

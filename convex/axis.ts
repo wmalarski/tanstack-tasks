@@ -15,7 +15,7 @@ export const insertAxis = mutation({
       index: args.index,
       name: args.name,
       orientation: args.orientation,
-      size: 100,
+      size: 300,
     });
   },
 });
