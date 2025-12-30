@@ -16,18 +16,14 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useAppForm, withForm } from "@/integrations/tanstack-form";
 
+import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
-import type { Id } from "convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import type { Doc } from "convex/_generated/dataModel";
 import type { AxisOrientation } from "convex/nodes";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import * as v from "valibot";
-
-import {
-  useDeleteAxisMutationOptions,
-  useInsertAxisMutationOptions,
-  useUpdateAxisMutationOptions,
-} from "./services";
 
 const AxisFieldsSchema = v.object({
   name: v.string(),
@@ -64,32 +60,72 @@ const AxisFields = withForm({
   validators: { onSubmit: AxisFieldsSchema },
 });
 
+const getAxisKey = (orientation: AxisOrientation) => {
+  const isHorizontal = orientation === "horizontal";
+  return isHorizontal ? ("axisX" as const) : ("axisY" as const);
+};
+
+const getAxisCopy = (
+  board: Doc<"boards">,
+  key: ReturnType<typeof getAxisKey>,
+) => {
+  return [...board[key]];
+};
+
+const getAxisIndex = (axis: ReturnType<typeof getAxisCopy>, axisId: string) => {
+  return axis.findIndex((entry) => entry.id === axisId);
+};
+
+const getAxisMutationData = (
+  orientation: AxisOrientation,
+  board: Doc<"boards">,
+  axisId: string,
+) => {
+  const key = getAxisKey(orientation);
+  const axisCopy = getAxisCopy(board, key);
+  const index = getAxisIndex(axisCopy, axisId);
+
+  return { axisCopy, index, key };
+};
+
 type InsertAxisFormProps = {
-  index: number;
-  boardId: Id<"boards">;
+  axisId: string;
+  board: Doc<"boards">;
   orientation: AxisOrientation;
   onSuccess: () => void;
 };
 
 const InsertAxisForm = ({
-  index,
-  boardId,
+  axisId,
   orientation,
+  board,
   onSuccess,
 }: InsertAxisFormProps) => {
-  const insertAxisMutationOptions = useInsertAxisMutationOptions({
+  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
+  const updateBoardMutation = useMutation({
+    mutationFn: updateBoardMutationFn,
     onSuccess,
+    throwOnError: false,
   });
-  const insertAxisMutation = useMutation(insertAxisMutationOptions);
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
     onSubmit: async (data) => {
-      await insertAxisMutation.mutateAsync({
-        boardId,
-        index,
-        name: data.value.name,
+      const { axisCopy, index, key } = getAxisMutationData(
         orientation,
+        board,
+        axisId,
+      );
+
+      axisCopy.splice(index, 0, {
+        id: String(Date.now()),
+        name: data.value.name,
+        size: 300,
+      });
+
+      await updateBoardMutation.mutateAsync({
+        boardId: board._id,
+        [key]: axisCopy,
       });
     },
     validators: { onSubmit: AxisFieldsSchema },
@@ -102,7 +138,7 @@ const InsertAxisForm = ({
   return (
     <updateBoardForm.AppForm>
       <form action={formAction} className="flex flex-col gap-4">
-        <AxisFields error={insertAxisMutation.error} form={updateBoardForm} />
+        <AxisFields error={updateBoardMutation.error} form={updateBoardForm} />
         <updateBoardForm.Button type="submit">Insert</updateBoardForm.Button>
       </form>
     </updateBoardForm.AppForm>
@@ -111,21 +147,42 @@ const InsertAxisForm = ({
 
 type UpdateAxisFormProps = {
   onSuccess: () => void;
-  axisId: Id<"axis">;
+  axisId: string;
+  board: Doc<"boards">;
+  orientation: AxisOrientation;
 };
 
-const UpdateAxisForm = ({ onSuccess, axisId }: UpdateAxisFormProps) => {
-  const updateAxisMutationOptions = useUpdateAxisMutationOptions({
+const UpdateAxisForm = ({
+  onSuccess,
+  axisId,
+  board,
+  orientation,
+}: UpdateAxisFormProps) => {
+  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
+  const updateBoardMutation = useMutation({
+    mutationFn: updateBoardMutationFn,
     onSuccess,
+    throwOnError: false,
   });
-  const updateAxisMutation = useMutation(updateAxisMutationOptions);
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
     onSubmit: async (data) => {
-      await updateAxisMutation.mutateAsync({
+      const { axisCopy, index, key } = getAxisMutationData(
+        orientation,
+        board,
         axisId,
+      );
+
+      const currentEntry = axisCopy[index];
+      axisCopy.splice(index, 1, {
+        ...currentEntry,
         name: data.value.name,
+      });
+
+      await updateBoardMutation.mutateAsync({
+        boardId: board._id,
+        [key]: axisCopy,
       });
     },
     validators: { onSubmit: AxisFieldsSchema },
@@ -138,7 +195,7 @@ const UpdateAxisForm = ({ onSuccess, axisId }: UpdateAxisFormProps) => {
   return (
     <updateBoardForm.AppForm>
       <form action={formAction} className="flex flex-col gap-4">
-        <AxisFields error={updateAxisMutation.error} form={updateBoardForm} />
+        <AxisFields error={updateBoardMutation.error} form={updateBoardForm} />
         <updateBoardForm.Button type="submit">Update</updateBoardForm.Button>
       </form>
     </updateBoardForm.AppForm>
@@ -146,15 +203,15 @@ const UpdateAxisForm = ({ onSuccess, axisId }: UpdateAxisFormProps) => {
 };
 
 type InsertAxisItemPopoverProps = {
-  index: number;
-  boardId: Id<"boards">;
+  axisId: string;
+  board: Doc<"boards">;
   orientation: AxisOrientation;
 };
 
 export const InsertAxisItemPopover = ({
   orientation,
-  boardId,
-  index,
+  board,
+  axisId,
 }: InsertAxisItemPopoverProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -170,8 +227,8 @@ export const InsertAxisItemPopover = ({
       <PopoverPositioner>
         <PopoverContent className="w-80">
           <InsertAxisForm
-            boardId={boardId}
-            index={index}
+            axisId={axisId}
+            board={board}
             onSuccess={onSuccess}
             orientation={orientation}
           />
@@ -182,11 +239,15 @@ export const InsertAxisItemPopover = ({
 };
 
 type UpdateAxisItemPopoverProps = {
-  axisId: Id<"axis">;
+  axisId: string;
+  board: Doc<"boards">;
+  orientation: AxisOrientation;
 };
 
 export const UpdateAxisItemPopover = ({
+  board,
   axisId,
+  orientation,
 }: UpdateAxisItemPopoverProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -201,7 +262,12 @@ export const UpdateAxisItemPopover = ({
       </PopoverTrigger>
       <PopoverPositioner>
         <PopoverContent className="w-80">
-          <UpdateAxisForm axisId={axisId} onSuccess={onSuccess} />
+          <UpdateAxisForm
+            axisId={axisId}
+            board={board}
+            onSuccess={onSuccess}
+            orientation={orientation}
+          />
         </PopoverContent>
       </PopoverPositioner>
     </Popover>
@@ -220,15 +286,35 @@ const DeleteAxisSubmit = () => {
 };
 
 type DeleteAxisFormProps = {
-  axisId: Id<"axis">;
+  board: Doc<"boards">;
+  axisId: string;
+  orientation: AxisOrientation;
 };
 
-const DeleteAxisForm = ({ axisId }: DeleteAxisFormProps) => {
-  const deleteAxisMutationOptions = useDeleteAxisMutationOptions();
-  const deleteAxisMutation = useMutation(deleteAxisMutationOptions);
+const DeleteAxisForm = ({
+  board,
+  axisId,
+  orientation,
+}: DeleteAxisFormProps) => {
+  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
+  const updateBoardMutation = useMutation({
+    mutationFn: updateBoardMutationFn,
+    throwOnError: false,
+  });
 
   const formAction = async () => {
-    await deleteAxisMutation.mutateAsync({ axisId });
+    const { axisCopy, index, key } = getAxisMutationData(
+      orientation,
+      board,
+      axisId,
+    );
+
+    axisCopy.splice(index, 1);
+
+    await updateBoardMutation.mutateAsync({
+      boardId: board._id,
+      [key]: axisCopy,
+    });
   };
 
   return (
@@ -239,10 +325,16 @@ const DeleteAxisForm = ({ axisId }: DeleteAxisFormProps) => {
 };
 
 type DeleteAxisPopoverProps = {
-  axisId: Id<"axis">;
+  board: Doc<"boards">;
+  axisId: string;
+  orientation: AxisOrientation;
 };
 
-export const DeleteAxisPopover = ({ axisId }: DeleteAxisPopoverProps) => {
+export const DeleteAxisPopover = ({
+  board,
+  axisId,
+  orientation,
+}: DeleteAxisPopoverProps) => {
   return (
     <Popover>
       <PopoverTrigger render={<Button variant="outline" />}>
@@ -250,7 +342,11 @@ export const DeleteAxisPopover = ({ axisId }: DeleteAxisPopoverProps) => {
       </PopoverTrigger>
       <PopoverPositioner>
         <PopoverContent className="w-80">
-          <DeleteAxisForm axisId={axisId} />
+          <DeleteAxisForm
+            axisId={axisId}
+            board={board}
+            orientation={orientation}
+          />
         </PopoverContent>
       </PopoverPositioner>
     </Popover>

@@ -1,5 +1,8 @@
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { type NodeProps, type ReactFlowState, useStore } from "@xyflow/react";
-import type { Id } from "convex/_generated/dataModel";
+import { api } from "convex/_generated/api";
+import type { Doc } from "convex/_generated/dataModel";
 import type { AxisOrientation, AxisResult, NodeResult } from "convex/nodes";
 import { useMemo } from "react";
 
@@ -14,19 +17,29 @@ type AxisNodeProps = NodeProps & {
 };
 
 export const AxisNode = ({ data, id }: AxisNodeProps) => {
-  const axisId = id as Id<"axis">;
+  const getBoardQuery = useSuspenseQuery(
+    convexQuery(api.boards.queryBoard, { boardId: data.boardId }),
+  );
 
   return (
     <div className="flex flex-col items-start">
       <span>{data.label}</span>
-      <UpdateAxisItemPopover axisId={axisId} />
-      <DeleteAxisItem axisId={axisId} orientation={data.orientation} />
-      <InsertAxisItemPopover
-        boardId={data.boardId}
-        index={data.index}
+      <UpdateAxisItemPopover
+        axisId={id}
+        board={getBoardQuery.data}
         orientation={data.orientation}
       />
-      <AxisSummary axisId={axisId} />
+      <DeleteAxisItem
+        axisId={id}
+        board={getBoardQuery.data}
+        orientation={data.orientation}
+      />
+      <InsertAxisItemPopover
+        axisId={id}
+        board={getBoardQuery.data}
+        orientation={data.orientation}
+      />
+      <AxisSummary axisId={id} />
     </div>
   );
 };
@@ -40,11 +53,16 @@ const axisCountSelectorFactory =
   };
 
 type DeleteAxisItemProps = {
-  axisId: Id<"axis">;
+  axisId: string;
   orientation: AxisOrientation;
+  board: Doc<"boards">;
 };
 
-const DeleteAxisItem = ({ axisId, orientation }: DeleteAxisItemProps) => {
+const DeleteAxisItem = ({
+  axisId,
+  board,
+  orientation,
+}: DeleteAxisItemProps) => {
   const axisCountSelector = useMemo(
     () => axisCountSelectorFactory(orientation),
     [orientation],
@@ -56,15 +74,17 @@ const DeleteAxisItem = ({ axisId, orientation }: DeleteAxisItemProps) => {
     return null;
   }
 
-  return <DeleteAxisPopover axisId={axisId} />;
-};
-
-type AxisSummaryProps = {
-  axisId: Id<"axis">;
+  return (
+    <DeleteAxisPopover
+      axisId={axisId}
+      board={board}
+      orientation={orientation}
+    />
+  );
 };
 
 const estimationCountSelectorFactory =
-  (axisId: Id<"axis">) => (state: ReactFlowState) => {
+  (axisId: string) => (state: ReactFlowState) => {
     const typedState = state as unknown as ReactFlowState<NodeResult>;
 
     const estimates = typedState.nodes.map((node) => {
@@ -81,6 +101,10 @@ const estimationCountSelectorFactory =
 
     return estimates.reduce((prev, current) => prev + current, 0);
   };
+
+type AxisSummaryProps = {
+  axisId: string;
+};
 
 const AxisSummary = ({ axisId }: AxisSummaryProps) => {
   const estimationCountSelector = useMemo(
