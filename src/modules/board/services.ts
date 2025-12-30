@@ -23,9 +23,22 @@ type UseUpdateBoardMutationOptionsArgs = {
 export const useUpdateBoardMutationOptions = ({
   onSuccess,
 }: UseUpdateBoardMutationOptionsArgs = {}) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
   return mutationOptions({
-    mutationFn: updateBoardMutationFn,
+    mutationFn: useConvexMutation(api.boards.updateBoard),
+    onSuccess,
+    throwOnError: false,
+  });
+};
+
+type UseApplyBoardChangesMutationOptionsArgs = {
+  onSuccess?: () => void;
+};
+
+export const useApplyBoardChangesMutationOptions = ({
+  onSuccess,
+}: UseApplyBoardChangesMutationOptionsArgs = {}) => {
+  return mutationOptions({
+    mutationFn: useConvexMutation(api.boards.applyBoardChanges),
     onSuccess,
     throwOnError: false,
   });

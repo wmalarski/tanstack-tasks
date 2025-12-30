@@ -2,7 +2,7 @@ import type { Node } from "@xyflow/react";
 import { useMemo } from "react";
 import "@xyflow/react/dist/style.css";
 
-import type { Doc, Id } from "convex/_generated/dataModel";
+import type { Doc } from "convex/_generated/dataModel";
 
 export const useBoardNodes = (board: Doc<"boards">) => {
   const staticNodes = useMemo(() => getAxisNodes(board), [board]);
@@ -29,14 +29,12 @@ const getPositions = (entries: Doc<"boards">["axisX"]) => {
 };
 
 type MapAxisToNodesArgs = {
-  boardId: Id<"boards">;
   entries: Doc<"boards">["axisX"];
   positions: number[];
   orientation: "vertical" | "horizontal";
 };
 
 const mapAxisToNodes = ({
-  boardId,
   entries,
   orientation,
   positions,
@@ -46,7 +44,6 @@ const mapAxisToNodes = ({
       ({
         connectable: false,
         data: {
-          boardId,
           index,
           label: axis.name,
           orientation,
@@ -89,7 +86,6 @@ const mapAxisToGroupNodes = ({
         data: {
           axisX: axisX.id,
           axisY: axisY.id,
-          boardId: board._id,
           label: `H:${axisX.name}-V:${axisY.name}`,
         },
         deletable: false,
@@ -109,13 +105,11 @@ const getAxisNodes = (board: Doc<"boards">) => {
 
   return [
     ...mapAxisToNodes({
-      boardId: board._id,
       entries: board.axisX,
       orientation: "horizontal",
       positions: horizontalPositions,
     }),
     ...mapAxisToNodes({
-      boardId: board._id,
       entries: board.axisY,
       orientation: "vertical",
       positions: verticalPositions,

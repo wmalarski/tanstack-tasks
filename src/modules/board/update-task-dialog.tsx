@@ -13,7 +13,7 @@ import { useAppForm } from "@/integrations/tanstack-form";
 
 import { convexQuery } from "@convex-dev/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { applyNodeChanges } from "@xyflow/react";
+import { applyNodeChanges, useStoreApi } from "@xyflow/react";
 import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { useState } from "react";
@@ -23,50 +23,58 @@ import {
   NodeFields,
   NodeFieldsSchema,
 } from "./node-fields";
+import type { NodeResult } from "./node-utils";
 import { useApplyBoardChangesMutationOptions } from "./services";
 
-type InsertTaskDialogProps = {
+type UpdateTaskDialogProps = {
   boardId: Id<"boards">;
-  axisX: string;
-  axisY: string;
+  taskId: string;
 };
 
-export const InsertTaskDialog = ({
-  axisX,
-  axisY,
+export const UpdateTaskDialog = ({
   boardId,
-}: InsertTaskDialogProps) => {
+  taskId,
+}: UpdateTaskDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const store = useStoreApi();
 
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation(
     useApplyBoardChangesMutationOptions({
       onSuccess: () => {
-        insertTaskForm.reset();
+        updateTaskForm.reset();
         setIsOpen(false);
       },
     }),
   );
 
-  const insertTaskForm = useAppForm({
+  const updateTaskForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
     onSubmit: async (data) => {
+      const task = store
+        .getState()
+        .nodes.find((node) => node.id === taskId) as NodeResult;
+
+      if (!task || "type" in task) {
+        return;
+      }
+
       const nodeChanges = [
         {
+          id: taskId,
           item: {
+            ...task,
             data: {
-              axisX,
-              axisY,
+              ...task.data,
               description: data.value.description,
               estimate: +data.value.estimate,
               link: data.value.link,
               title: data.value.title,
             },
-            id: String(Date.now()),
-            position: { x: 0, y: 0 },
           },
-          type: "add" as const,
+          type: "replace" as const,
         },
       ];
 
@@ -94,7 +102,7 @@ export const InsertTaskDialog = ({
   });
 
   const formAction = async () => {
-    await insertTaskForm.handleSubmit();
+    await updateTaskForm.handleSubmit();
   };
 
   return (
@@ -111,17 +119,15 @@ export const InsertTaskDialog = ({
               done.
             </DialogDescription>
           </DialogHeader>
-          <insertTaskForm.AppForm>
-            <NodeFields error={updateMutation.error} form={insertTaskForm} />
+          <updateTaskForm.AppForm>
+            <NodeFields error={updateMutation.error} form={updateTaskForm} />
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>
                 Cancel
               </DialogClose>
-              <insertTaskForm.Button type="submit">
-                Insert
-              </insertTaskForm.Button>
+              <updateTaskForm.Button type="submit">Save</updateTaskForm.Button>
             </DialogFooter>
-          </insertTaskForm.AppForm>
+          </updateTaskForm.AppForm>
         </form>
       </DialogContent>
     </Dialog>

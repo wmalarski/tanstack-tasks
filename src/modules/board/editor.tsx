@@ -4,25 +4,22 @@ import {
   applyNodeChanges,
   type Connection,
   type EdgeChange,
-  type Node,
   type NodeChange,
   ReactFlow,
 } from "@xyflow/react";
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef } from "react";
 import "@xyflow/react/dist/style.css";
 
-import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
-import {
-  mutationOptions,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { convexQuery } from "@convex-dev/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
-import type { Doc, Id } from "convex/_generated/dataModel";
+import type { Doc } from "convex/_generated/dataModel";
 
 import { AxisNode } from "./axis-node";
+import { BoardContextProvider } from "./board-context";
 import { GroupNode } from "./group-node";
-import type { TaskResult } from "./node-utils";
+import { type TaskResult, useBoardNodes } from "./node-utils";
+import { useApplyBoardChangesMutationOptions } from "./services";
 import { TaskNode } from "./task-node";
 
 const nodeTypes = {
@@ -49,12 +46,7 @@ export const Editor = ({ board }: EditorProps) => {
     [boardId],
   );
 
-  const staticNodes = useMemo(() => getAxisNodes(board), [board]);
-
-  const nodes = useMemo(
-    () => [...staticNodes, ...board.tasks],
-    [board.tasks, staticNodes],
-  );
+  const nodes = useBoardNodes(board);
 
   const onNodesChange = useCallback(
     (changes: NodeChange<(typeof nodes)[0]>[]) => {
@@ -122,69 +114,25 @@ export const Editor = ({ board }: EditorProps) => {
     [throttledUpdate, boardQueryKey, boardId, queryClient.setQueryData],
   );
 
-  // const combainedNodes = useMemo(() => {
-  //   return [
-  //     {
-  //       id: "A",
-  //       position: { x: 0, y: 0 },
-  //       style: {
-  //         height: 240,
-  //         width: 270,
-  //       },
-  //       type: "group",
-  //     },
-  //     {
-  //       data: { label: "Child Node 1" },
-  //       extent: "parent",
-  //       id: "A-1",
-  //       parentId: "A",
-  //       position: { x: 10, y: 10 },
-  //       type: "input",
-  //     },
-  //     {
-  //       data: { label: "Child Node 2" },
-  //       extent: "parent",
-  //       id: "A-2",
-  //       parentId: "A",
-  //       position: { x: 10, y: 120 },
-  //     },
-  //     {
-  //       data: { label: "Node B" },
-  //       id: "B",
-  //       position: { x: -150, y: 250 },
-  //       type: "output",
-  //     },
-  //     {
-  //       data: { label: "Node C" },
-  //       id: "C",
-  //       position: { x: 150, y: 250 },
-  //       type: "output",
-  //     },
-  //   ];
-  // }, [nodes]);
-
-  // const updatedNodes = useMemo(() => {
-  //   return nodes.map((node) => ({ ...nodeDefaults[node.type], ...node }));
-  // }, [nodes.map]);
-
   return (
-    <div style={{ height: "100vh", width: "100vw" }}>
-      <ReactFlow
-        edges={board.edges}
-        fitView
-        nodes={nodes}
-        nodeTypes={nodeTypes}
-        onConnect={onConnect}
-        onEdgesChange={onEdgesChange}
-        onNodesChange={onNodesChange}
-      />
-    </div>
+    <BoardContextProvider boardId={boardId}>
+      <div style={{ height: "100vh", width: "100vw" }}>
+        <ReactFlow
+          edges={board.edges}
+          fitView
+          nodes={nodes}
+          nodeTypes={nodeTypes}
+          onConnect={onConnect}
+          onEdgesChange={onEdgesChange}
+          onNodesChange={onNodesChange}
+        />
+      </div>
+    </BoardContextProvider>
   );
 };
 
 const useThrottledUpdates = () => {
-  const mutationFn = useConvexMutation(api.boards.applyBoardChanges);
-  const updateMutation = useMutation(mutationOptions({ mutationFn }));
+  const updateMutation = useMutation(useApplyBoardChangesMutationOptions());
 
   type Arguments = Parameters<typeof updateMutation.mutate>[0];
 
@@ -235,115 +183,47 @@ const useThrottledUpdates = () => {
   });
 };
 
-const DEFAULT_AXIS_SIZE = 200;
+// const combainedNodes = useMemo(() => {
+//   return [
+//     {
+//       id: "A",
+//       position: { x: 0, y: 0 },
+//       style: {
+//         height: 240,
+//         width: 270,
+//       },
+//       type: "group",
+//     },
+//     {
+//       data: { label: "Child Node 1" },
+//       extent: "parent",
+//       id: "A-1",
+//       parentId: "A",
+//       position: { x: 10, y: 10 },
+//       type: "input",
+//     },
+//     {
+//       data: { label: "Child Node 2" },
+//       extent: "parent",
+//       id: "A-2",
+//       parentId: "A",
+//       position: { x: 10, y: 120 },
+//     },
+//     {
+//       data: { label: "Node B" },
+//       id: "B",
+//       position: { x: -150, y: 250 },
+//       type: "output",
+//     },
+//     {
+//       data: { label: "Node C" },
+//       id: "C",
+//       position: { x: 150, y: 250 },
+//       type: "output",
+//     },
+//   ];
+// }, [nodes]);
 
-const getPositions = (entries: Doc<"boards">["axisX"]) => {
-  return entries.reduce(
-    (prev, current) => {
-      const last = prev[prev.length - 1];
-      prev.push(last + current.size);
-      return prev;
-    },
-    [0],
-  );
-};
-
-type MapAxisToNodesArgs = {
-  boardId: Id<"boards">;
-  entries: Doc<"boards">["axisX"];
-  positions: number[];
-  orientation: "vertical" | "horizontal";
-};
-
-const mapAxisToNodes = ({
-  boardId,
-  entries,
-  orientation,
-  positions,
-}: MapAxisToNodesArgs) => {
-  return entries.map(
-    (axis, index) =>
-      ({
-        connectable: false,
-        data: {
-          boardId,
-          index,
-          label: axis.name,
-          orientation,
-        },
-        deletable: false,
-        draggable: false,
-        id: axis.id,
-        position:
-          orientation === "horizontal"
-            ? { x: positions[index], y: -DEFAULT_AXIS_SIZE }
-            : { x: -DEFAULT_AXIS_SIZE, y: positions[index] },
-        style:
-          orientation === "horizontal"
-            ? { height: DEFAULT_AXIS_SIZE, width: axis.size }
-            : { height: axis.size, width: DEFAULT_AXIS_SIZE },
-        type: "axis",
-      }) satisfies Node,
-  );
-};
-
-const getParentId = (axisX: string, axisY: string) => {
-  return `${axisX}-${axisY}`;
-};
-
-type MapAxisToGroupNodesArgs = {
-  board: Doc<"boards">;
-  horizontalPositions: number[];
-  verticalPositions: number[];
-};
-
-const mapAxisToGroupNodes = ({
-  horizontalPositions,
-  verticalPositions,
-  board,
-}: MapAxisToGroupNodesArgs) => {
-  return board.axisX.flatMap((axisX, column) => {
-    return board.axisY.map((axisY, row) => {
-      return {
-        connectable: false,
-        data: {
-          axisX: axisX.id,
-          axisY: axisY.id,
-          boardId: board._id,
-          label: `H:${axisX.name}-V:${axisY.name}`,
-        },
-        deletable: false,
-        draggable: false,
-        id: getParentId(axisX.id, axisY.id),
-        position: { x: horizontalPositions[column], y: verticalPositions[row] },
-        style: { height: axisY.size, width: axisX.size },
-        type: "group" as const,
-      } satisfies Node;
-    });
-  });
-};
-
-const getAxisNodes = (board: Doc<"boards">) => {
-  const horizontalPositions = getPositions(board.axisX);
-  const verticalPositions = getPositions(board.axisY);
-
-  return [
-    ...mapAxisToNodes({
-      boardId: board._id,
-      entries: board.axisX,
-      orientation: "horizontal",
-      positions: horizontalPositions,
-    }),
-    ...mapAxisToNodes({
-      boardId: board._id,
-      entries: board.axisY,
-      orientation: "vertical",
-      positions: verticalPositions,
-    }),
-    ...mapAxisToGroupNodes({
-      board,
-      horizontalPositions,
-      verticalPositions,
-    }),
-  ];
-};
+// const updatedNodes = useMemo(() => {
+//   return nodes.map((node) => ({ ...nodeDefaults[node.type], ...node }));
+// }, [nodes.map]);

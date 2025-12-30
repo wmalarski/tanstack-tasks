@@ -18,13 +18,17 @@ import { BasicLink } from "@/components/ui/link";
 
 import type { NodeProps } from "@xyflow/react";
 
+import { useBoardContext } from "./board-context";
 import type { TaskResult } from "./node-utils";
+import { UpdateTaskDialog } from "./update-task-dialog";
 
 type TaskNodeProps = NodeProps & {
   data: TaskResult["data"];
 };
 
-export const TaskNode = ({ data }: TaskNodeProps) => {
+export const TaskNode = ({ data, id }: TaskNodeProps) => {
+  const { boardId } = useBoardContext();
+
   return (
     <div className="flex flex-col items-start">
       <div>
@@ -33,6 +37,7 @@ export const TaskNode = ({ data }: TaskNodeProps) => {
         <TaskDropdown />
       </div>
       <span className="text-muted-foreground text-sm">{data.description}</span>
+      <UpdateTaskDialog boardId={boardId} taskId={id} />
       <Badge>{data.estimate}</Badge>
     </div>
   );

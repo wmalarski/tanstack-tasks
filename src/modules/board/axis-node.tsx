@@ -10,6 +10,7 @@ import {
   InsertAxisItemPopover,
   UpdateAxisItemPopover,
 } from "./axis-dialogs";
+import { useBoardContext } from "./board-context";
 import type { AxisOrientation, AxisResult, NodeResult } from "./node-utils";
 
 type AxisNodeProps = NodeProps & {
@@ -17,8 +18,10 @@ type AxisNodeProps = NodeProps & {
 };
 
 export const AxisNode = ({ data, id }: AxisNodeProps) => {
+  const { boardId } = useBoardContext();
+
   const getBoardQuery = useSuspenseQuery(
-    convexQuery(api.boards.queryBoard, { boardId: data.boardId }),
+    convexQuery(api.boards.queryBoard, { boardId }),
   );
 
   return (
