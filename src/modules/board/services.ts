@@ -30,18 +30,3 @@ export const useUpdateBoardMutationOptions = ({
     throwOnError: false,
   });
 };
-
-type UseInsertTaskMutationOptionsArgs = {
-  onSuccess?: () => void;
-};
-
-export const useInsertTaskMutationOptions = ({
-  onSuccess,
-}: UseInsertTaskMutationOptionsArgs = {}) => {
-  const insertNodeMutationFn = useConvexMutation(api.tasks.insertTask);
-  return mutationOptions({
-    mutationFn: insertNodeMutationFn,
-    onSuccess,
-    throwOnError: false,
-  });
-};
