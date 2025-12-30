@@ -19,21 +19,23 @@ import type { Doc, Id } from "convex/_generated/dataModel";
 import { useState } from "react";
 
 import {
-  NODE_FIELDS_DEFAULT,
   NodeFields,
+  type NodeFieldsResult,
   NodeFieldsSchema,
 } from "./node-fields";
-import type { NodeResult } from "./node-utils";
+import type { NodeResult, TaskResult } from "./node-utils";
 import { useApplyBoardChangesMutationOptions } from "./services";
 
 type UpdateTaskDialogProps = {
   boardId: Id<"boards">;
   taskId: string;
+  taskData: TaskResult["data"];
 };
 
 export const UpdateTaskDialog = ({
   boardId,
   taskId,
+  taskData,
 }: UpdateTaskDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -51,7 +53,12 @@ export const UpdateTaskDialog = ({
   );
 
   const updateTaskForm = useAppForm({
-    defaultValues: NODE_FIELDS_DEFAULT,
+    defaultValues: {
+      description: taskData.description,
+      estimate: String(taskData.estimate),
+      link: taskData.link,
+      title: taskData.title,
+    } as NodeFieldsResult,
     onSubmit: async (data) => {
       const task = store
         .getState()
@@ -65,7 +72,6 @@ export const UpdateTaskDialog = ({
         {
           id: taskId,
           item: {
-            ...task,
             data: {
               ...task.data,
               description: data.value.description,
@@ -73,6 +79,8 @@ export const UpdateTaskDialog = ({
               link: data.value.link,
               title: data.value.title,
             },
+            id: taskId,
+            position: task.position,
           },
           type: "replace" as const,
         },
