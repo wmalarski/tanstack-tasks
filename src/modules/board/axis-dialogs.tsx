@@ -114,7 +114,7 @@ const InsertAxisForm = ({
         axisId,
       );
 
-      axisCopy.splice(index, 0, {
+      axisCopy.splice(index + 1, 0, {
         id: String(Date.now()),
         name: data.value.name,
         size: 300,
@@ -159,16 +159,17 @@ const UpdateAxisForm = ({
     useUpdateBoardMutationOptions({ onSuccess }),
   );
 
-  const updateBoardForm = useAppForm({
-    defaultValues: { name: "" } as AxisFieldsArgs,
-    onSubmit: async (data) => {
-      const { axisCopy, index, key } = getAxisMutationData(
-        orientation,
-        board,
-        axisId,
-      );
+  const { axisCopy, index, key } = getAxisMutationData(
+    orientation,
+    board,
+    axisId,
+  );
 
-      const currentEntry = axisCopy[index];
+  const currentEntry = axisCopy[index];
+
+  const updateBoardForm = useAppForm({
+    defaultValues: { name: currentEntry.name } as AxisFieldsArgs,
+    onSubmit: async (data) => {
       axisCopy.splice(index, 1, {
         ...currentEntry,
         name: data.value.name,

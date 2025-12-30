@@ -49,7 +49,7 @@ const mapAxisToNodes = ({
           orientation,
         },
         deletable: false,
-        draggable: false,
+        draggable: true,
         id: axis.id,
         position:
           orientation === "horizontal"
@@ -59,7 +59,7 @@ const mapAxisToNodes = ({
           orientation === "horizontal"
             ? { height: DEFAULT_AXIS_SIZE, width: axis.size }
             : { height: axis.size, width: DEFAULT_AXIS_SIZE },
-        type: "axis",
+        type: "axis" as const,
       }) satisfies Node,
   );
 };
