@@ -22,6 +22,7 @@ import type { Doc, Id } from "convex/_generated/dataModel";
 
 import { AxisNode } from "./axis-node";
 import { GroupNode } from "./group-node";
+import type { TaskResult } from "./node-utils";
 import { TaskNode } from "./task-node";
 
 const nodeTypes = {
@@ -31,7 +32,6 @@ const nodeTypes = {
 };
 
 type EdgeResult = Doc<"boards">["edges"][0];
-type TaskResult = Doc<"boards">["tasks"][0];
 
 type EditorProps = {
   board: Doc<"boards">;

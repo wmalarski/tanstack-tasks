@@ -17,7 +17,8 @@ import {
 import { BasicLink } from "@/components/ui/link";
 
 import type { NodeProps } from "@xyflow/react";
-import type { TaskResult } from "convex/nodes";
+
+import type { TaskResult } from "./node-utils";
 
 type TaskNodeProps = NodeProps & {
   data: TaskResult["data"];
@@ -27,7 +28,7 @@ export const TaskNode = ({ data }: TaskNodeProps) => {
   return (
     <div className="flex flex-col items-start">
       <div>
-        <span className="text-lg">{data.label}</span>
+        <span className="text-lg">{data.title}</span>
         {data.link ? <BasicLink href={data.link}>{data.link}</BasicLink> : null}
         <TaskDropdown />
       </div>

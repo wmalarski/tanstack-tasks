@@ -1,7 +1,7 @@
 import type { NodeProps } from "@xyflow/react";
-import type { GroupResult } from "convex/nodes";
 
 import { InsertTaskDialog } from "./insert-task-dialog";
+import type { GroupResult } from "./node-utils";
 
 type GroupNodeProps = NodeProps & {
   data: GroupResult["data"];

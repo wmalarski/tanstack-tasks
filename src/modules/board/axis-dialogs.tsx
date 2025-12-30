@@ -18,11 +18,11 @@ import { useAppForm, withForm } from "@/integrations/tanstack-form";
 
 import { useMutation } from "@tanstack/react-query";
 import type { Doc } from "convex/_generated/dataModel";
-import type { AxisOrientation } from "convex/nodes";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import * as v from "valibot";
 
+import type { AxisOrientation } from "./node-utils";
 import { useUpdateBoardMutationOptions } from "./services";
 
 const AxisFieldsSchema = v.object({

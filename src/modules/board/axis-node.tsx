@@ -3,7 +3,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { type NodeProps, type ReactFlowState, useStore } from "@xyflow/react";
 import { api } from "convex/_generated/api";
 import type { Doc } from "convex/_generated/dataModel";
-import type { AxisOrientation, AxisResult, NodeResult } from "convex/nodes";
 import { useMemo } from "react";
 
 import {
@@ -11,6 +10,7 @@ import {
   InsertAxisItemPopover,
   UpdateAxisItemPopover,
 } from "./axis-dialogs";
+import type { AxisOrientation, AxisResult, NodeResult } from "./node-utils";
 
 type AxisNodeProps = NodeProps & {
   data: AxisResult["data"];
@@ -88,7 +88,7 @@ const estimationCountSelectorFactory =
     const typedState = state as unknown as ReactFlowState<NodeResult>;
 
     const estimates = typedState.nodes.map((node) => {
-      if (node.type !== "task") {
+      if ("type" in node) {
         return 0;
       }
 
