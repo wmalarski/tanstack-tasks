@@ -19,7 +19,6 @@ import {
 } from "@tanstack/react-query";
 import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
-import type { NodeResult } from "convex/nodes";
 
 import { AxisNode } from "./axis-node";
 import { GroupNode } from "./group-node";
@@ -34,28 +33,7 @@ const nodeTypes = {
 type EdgeResult = Doc<"boards">["edges"][0];
 type TaskResult = Doc<"boards">["tasks"][0];
 
-// const nodeDefaults: Record<NodeResult["type"], Partial<Node>> = {
-//   axis: {
-//     connectable: false,
-//     deletable: false,
-//     draggable: false,
-//   },
-//   group: {
-//     connectable: false,
-//     deletable: false,
-//     draggable: false,
-//   },
-//   task: {
-//     deletable: false,
-//     extent: "parent",
-//     zIndex: 100,
-//   },
-// };
-
 type EditorProps = {
-  boardId: Id<"boards">;
-  nodes: NodeResult[];
-  edges: EdgeResult[];
   board: Doc<"boards">;
 };
 
@@ -257,62 +235,6 @@ const useThrottledUpdates = () => {
   });
 };
 
-// const useThrottledTasksUpdate = (nodes: NodeResult[]) => {
-//   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-//   const changesRef = useRef<NodeChange<NodeResult>[]>([]);
-
-//   const updateTasksMutationOptions = useUpdateTasksMutationOptions();
-//   const updateTasksMutation = useMutation(updateTasksMutationOptions);
-
-//   useEffect(() => {
-//     return () => {
-//       if (timeoutRef.current) {
-//         clearTimeout(timeoutRef.current);
-//       }
-//     };
-//   }, []);
-
-//   return useEffectEvent((updates: NodeChange<NodeResult>[]) => {
-//     if (timeoutRef.current || updateTasksMutation.isPending) {
-//       changesRef.current.push(...updates);
-//       return;
-//     }
-
-//     timeoutRef.current = setTimeout(() => {
-//       const changes = changesRef.current;
-//       timeoutRef.current = null;
-//       changesRef.current = [];
-
-//       const removedNodeIds: string[] = [];
-//       const changedNodeIds = new Set<string>();
-
-//       changes.forEach((change) => {
-//         change.type === "position" && changedNodeIds.add(change.id);
-//         change.type === "remove" && removedNodeIds.push(change.id);
-//       });
-
-//       const changedNodes = nodes.filter(
-//         (node) => changedNodeIds.has(node.id) && node.type === "task",
-//       );
-
-//       const applied = applyNodeChanges(changes, changedNodes);
-
-//       if (removedNodeIds.length === 0 && applied.length === 0) {
-//         return;
-//       }
-
-//       updateTasksMutation.mutate({
-//         remove: removedNodeIds as Id<"tasks">[],
-//         update: applied.map((node) => ({
-//           positionX: node.position.x,
-//           positionY: node.position.y,
-//           taskId: node.id as Id<"tasks">,
-//         })),
-//       });
-//     }, 1000);
-//   });
-// };
-
 const DEFAULT_AXIS_SIZE = 200;
 
 const getPositions = (entries: Doc<"boards">["axisX"]) => {
@@ -402,7 +324,6 @@ const mapAxisToGroupNodes = ({
 };
 
 const getAxisNodes = (board: Doc<"boards">) => {
-  console.log("[getAxisNodes]", board);
   const horizontalPositions = getPositions(board.axisX);
   const verticalPositions = getPositions(board.axisY);
 

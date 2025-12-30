@@ -27,12 +27,11 @@ import {
   NodeFields,
   NodeFieldsSchema,
 } from "./node-fields";
-import { useInsertTaskMutationOptions } from "./services";
 
 type InsertTaskDialogProps = {
   boardId: Id<"boards">;
-  axisX: Id<"axis">;
-  axisY: Id<"axis">;
+  axisX: string;
+  axisY: string;
 };
 
 export const InsertTaskDialog = ({
@@ -44,17 +43,17 @@ export const InsertTaskDialog = ({
 
   const queryClient = useQueryClient();
 
-  // const store = useStore((state) => state.nodes)
   const mutationFn = useConvexMutation(api.boards.applyBoardChanges);
   const updateMutation = useMutation(
-    mutationOptions({ mutationFn, throwOnError: false }),
+    mutationOptions({
+      mutationFn,
+      onSuccess: () => {
+        insertNodeForm.reset();
+        setIsOpen(false);
+      },
+      throwOnError: false,
+    }),
   );
-
-  const insertNodeMutationOptions = useInsertTaskMutationOptions({
-    onSuccess: () => setIsOpen(false),
-  });
-
-  const insertNodeMutation = useMutation(insertNodeMutationOptions);
 
   const insertNodeForm = useAppForm({
     defaultValues: NODE_FIELDS_DEFAULT,
@@ -94,8 +93,6 @@ export const InsertTaskDialog = ({
         edgeChanges: [],
         nodeChanges,
       });
-
-      insertNodeForm.reset();
     },
     validators: {
       onSubmit: NodeFieldsSchema,
@@ -121,10 +118,7 @@ export const InsertTaskDialog = ({
             </DialogDescription>
           </DialogHeader>
           <insertNodeForm.AppForm>
-            <NodeFields
-              error={insertNodeMutation.error}
-              form={insertNodeForm}
-            />
+            <NodeFields error={updateMutation.error} form={insertNodeForm} />
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>
                 Cancel

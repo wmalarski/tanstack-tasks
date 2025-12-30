@@ -1,28 +1,6 @@
 import type { Node } from "@xyflow/react";
-import { v } from "convex/values";
 
 import type { Doc, Id } from "./_generated/dataModel";
-import { query } from "./_generated/server";
-
-export const queryNodes = query({
-  args: {
-    boardId: v.id("boards"),
-  },
-  handler: async (ctx, args) => {
-    const [tasks, axis] = await Promise.all([
-      ctx.db
-        .query("tasks")
-        .filter((q) => q.eq(q.field("board"), args.boardId))
-        .collect(),
-      ctx.db
-        .query("axis")
-        .filter((q) => q.eq(q.field("board"), args.boardId))
-        .collect(),
-    ]);
-
-    return mapDocumentsToNodes(tasks, axis, args.boardId);
-  },
-});
 
 const mapDocumentsToNodes = (
   tasks: Doc<"tasks">[],

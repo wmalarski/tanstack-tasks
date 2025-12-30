@@ -10,24 +10,9 @@ type BoardContentProps = {
 };
 
 export const BoardContent = ({ boardId }: BoardContentProps) => {
-  const getNodesQuery = useSuspenseQuery(
-    convexQuery(api.nodes.queryNodes, { boardId }),
-  );
-
-  const getEdgesQuery = useSuspenseQuery(
-    convexQuery(api.edges.queryEdges, { boardId }),
-  );
-
   const getBoardQuery = useSuspenseQuery(
     convexQuery(api.boards.queryBoard, { boardId }),
   );
 
-  return (
-    <Editor
-      board={getBoardQuery.data}
-      boardId={boardId}
-      edges={getEdgesQuery.data}
-      nodes={getNodesQuery.data}
-    />
-  );
+  return <Editor board={getBoardQuery.data} />;
 };

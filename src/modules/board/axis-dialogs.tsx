@@ -16,14 +16,14 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useAppForm, withForm } from "@/integrations/tanstack-form";
 
-import { useConvexMutation } from "@convex-dev/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "convex/_generated/api";
 import type { Doc } from "convex/_generated/dataModel";
 import type { AxisOrientation } from "convex/nodes";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
 import * as v from "valibot";
+
+import { useUpdateBoardMutationOptions } from "./services";
 
 const AxisFieldsSchema = v.object({
   name: v.string(),
@@ -101,12 +101,9 @@ const InsertAxisForm = ({
   board,
   onSuccess,
 }: InsertAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
-    onSuccess,
-    throwOnError: false,
-  });
+  const updateBoardMutation = useMutation(
+    useUpdateBoardMutationOptions({ onSuccess }),
+  );
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
@@ -158,12 +155,9 @@ const UpdateAxisForm = ({
   board,
   orientation,
 }: UpdateAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
-    onSuccess,
-    throwOnError: false,
-  });
+  const updateBoardMutation = useMutation(
+    useUpdateBoardMutationOptions({ onSuccess }),
+  );
 
   const updateBoardForm = useAppForm({
     defaultValues: { name: "" } as AxisFieldsArgs,
@@ -296,11 +290,7 @@ const DeleteAxisForm = ({
   axisId,
   orientation,
 }: DeleteAxisFormProps) => {
-  const updateBoardMutationFn = useConvexMutation(api.boards.updateBoard);
-  const updateBoardMutation = useMutation({
-    mutationFn: updateBoardMutationFn,
-    throwOnError: false,
-  });
+  const updateBoardMutation = useMutation(useUpdateBoardMutationOptions());
 
   const formAction = async () => {
     const { axisCopy, index, key } = getAxisMutationData(
