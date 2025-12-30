@@ -10,29 +10,29 @@ import { withForm } from "@/integrations/tanstack-form";
 
 import * as v from "valibot";
 
-export const NodeFieldsSchema = v.object({
+export const TaskFieldsSchema = v.object({
   description: v.string(),
   estimate: v.pipe(v.string(), v.toNumber(), v.minValue(0), v.integer()),
   link: v.optional(v.string()),
   title: v.string(),
 });
 
-export type NodeFieldsResult = v.InferInput<typeof NodeFieldsSchema>;
+export type TaskFieldsResult = v.InferInput<typeof TaskFieldsSchema>;
 
-export const NODE_FIELDS_DEFAULT: NodeFieldsResult = {
+export const TASK_FIELDS_DEFAULT: TaskFieldsResult = {
   description: "",
   estimate: "1",
   link: "",
   title: "",
 };
 
-type NodeFieldsProps = {
+type TaskFieldsProps = {
   error?: Error | null;
 };
 
-export const NodeFields = withForm({
-  defaultValues: NODE_FIELDS_DEFAULT,
-  props: {} as NodeFieldsProps,
+export const TaskFields = withForm({
+  defaultValues: TASK_FIELDS_DEFAULT,
+  props: {} as TaskFieldsProps,
   render: ({ form, error }) => {
     return (
       <FieldSet>
@@ -89,5 +89,5 @@ export const NodeFields = withForm({
       </FieldSet>
     );
   },
-  validators: { onSubmit: NodeFieldsSchema },
+  validators: { onSubmit: TaskFieldsSchema },
 });

@@ -18,12 +18,12 @@ import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { useState } from "react";
 
-import {
-  NODE_FIELDS_DEFAULT,
-  NodeFields,
-  NodeFieldsSchema,
-} from "./node-fields";
 import { useApplyBoardChangesMutationOptions } from "./services";
+import {
+  TASK_FIELDS_DEFAULT,
+  TaskFields,
+  TaskFieldsSchema,
+} from "./task-fields";
 
 type InsertTaskDialogProps = {
   boardId: Id<"boards">;
@@ -50,7 +50,7 @@ export const InsertTaskDialog = ({
   );
 
   const insertTaskForm = useAppForm({
-    defaultValues: NODE_FIELDS_DEFAULT,
+    defaultValues: TASK_FIELDS_DEFAULT,
     onSubmit: async (data) => {
       const nodeChanges = [
         {
@@ -89,7 +89,7 @@ export const InsertTaskDialog = ({
       });
     },
     validators: {
-      onSubmit: NodeFieldsSchema,
+      onSubmit: TaskFieldsSchema,
     },
   });
 
@@ -112,7 +112,7 @@ export const InsertTaskDialog = ({
             </DialogDescription>
           </DialogHeader>
           <insertTaskForm.AppForm>
-            <NodeFields error={updateMutation.error} form={insertTaskForm} />
+            <TaskFields error={updateMutation.error} form={insertTaskForm} />
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>
                 Cancel

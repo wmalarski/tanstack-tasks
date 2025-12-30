@@ -18,13 +18,13 @@ import { api } from "convex/_generated/api";
 import type { Doc, Id } from "convex/_generated/dataModel";
 import { useState } from "react";
 
-import {
-  NodeFields,
-  type NodeFieldsResult,
-  NodeFieldsSchema,
-} from "./node-fields";
 import type { NodeResult, TaskResult } from "./node-utils";
 import { useApplyBoardChangesMutationOptions } from "./services";
+import {
+  TaskFields,
+  type TaskFieldsResult,
+  TaskFieldsSchema,
+} from "./task-fields";
 
 type UpdateTaskDialogProps = {
   boardId: Id<"boards">;
@@ -58,7 +58,7 @@ export const UpdateTaskDialog = ({
       estimate: String(taskData.estimate),
       link: taskData.link,
       title: taskData.title,
-    } as NodeFieldsResult,
+    } as TaskFieldsResult,
     onSubmit: async (data) => {
       const task = store
         .getState()
@@ -105,7 +105,7 @@ export const UpdateTaskDialog = ({
       });
     },
     validators: {
-      onSubmit: NodeFieldsSchema,
+      onSubmit: TaskFieldsSchema,
     },
   });
 
@@ -128,7 +128,7 @@ export const UpdateTaskDialog = ({
             </DialogDescription>
           </DialogHeader>
           <updateTaskForm.AppForm>
-            <NodeFields error={updateMutation.error} form={updateTaskForm} />
+            <TaskFields error={updateMutation.error} form={updateTaskForm} />
             <DialogFooter>
               <DialogClose render={<Button variant="outline" />}>
                 Cancel
